@@ -1,0 +1,54 @@
+# Dans crypto-sim/ (racine)
+"# =================================
+# BACKEND (Spring Boot)
+# =================================
+server/target/
+server/.classpath
+server/.project
+server/.settings/
+server/bin/
+server/*.jar
+server/*.war
+server/*.ear
+
+# =================================
+# FRONTEND (React - à venir)
+# =================================
+client/node_modules/
+client/dist/
+client/build/
+client/.env
+client/.env.local
+client/.env*.local
+
+# =================================
+# IDE
+# =================================
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+
+# =================================
+# SYSTEM
+# =================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =================================
+# LOGS
+# =================================
+*.log
+logs/
+
+# =================================
+# OTHERS
+# =================================
+*.bak
+*.tmp
+*.temp" | Out-File .gitignore -Encoding UTF8
