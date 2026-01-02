@@ -28,6 +28,6 @@ public class Trades {
     @ManyToOne
     @JoinColumn
     private Orders sellerOrder;
-    
+
 
 }
