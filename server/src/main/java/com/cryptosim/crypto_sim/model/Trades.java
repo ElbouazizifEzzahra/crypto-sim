@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 @Entity
 @Data
@@ -17,11 +18,16 @@ public class Trades {
     private Long buyerId;
     private Long sellerId;
     //How much was traded?
-    private Double amount;
-    private Double price;
+    private BigDecimal amount;
+    private BigDecimal price;
     private Timestamp currentTimestamp;
     @ManyToOne
-    private Orders orders;
+    @JoinColumn
+    private Orders buyerOrder;
+
+    @ManyToOne
+    @JoinColumn
+    private Orders sellerOrder;
 
 
 }
