@@ -1,20 +1,26 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { registerRequest } from "./authService";
 
-const Register = ({ onSwitch }) => {
+const Register = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
   });
   const [status, setStatus] = useState({ type: "", msg: "" });
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await registerRequest(formData);
-      setStatus({ type: "success", msg: "Account created! Please log in." });
-      setTimeout(onSwitch, 2000);
+      setStatus({
+        type: "success",
+        msg: "Account created! Redirecting to login...",
+      });
+      // Wait 2 seconds then go to login
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       setStatus({ type: "error", msg: err.message });
     }
@@ -74,7 +80,7 @@ const Register = ({ onSwitch }) => {
         </form>
 
         <button
-          onClick={onSwitch}
+          onClick={() => navigate("/login")}
           className="w-full mt-6 text-center text-gray-400 text-sm hover:text-white"
         >
           Already have an account?{" "}
@@ -85,4 +91,4 @@ const Register = ({ onSwitch }) => {
   );
 };
 
-export default Register; // <--- THIS LINE IS THE FIX
+export default Register;

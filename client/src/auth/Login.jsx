@@ -1,14 +1,17 @@
 import React, { useState } from "react";
-import { useAuth } from "./authContext"; // Check if file is AuthContext or authContext
+import { useNavigate } from "react-router-dom"; // Use this instead of onSwitch
+import { useAuth } from "./authContext";
 
-const Login = ({ onSwitch }) => {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login, authError } = useAuth();
+  const navigate = useNavigate(); // Initialize navigate
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await login({ email, password });
+    // Note: Redirection to /dashboard happens automatically in App.jsx via isAuthenticated
   };
 
   return (
@@ -47,8 +50,9 @@ const Login = ({ onSwitch }) => {
           </button>
         </form>
 
+        {/* Use navigate() here */}
         <button
-          onClick={onSwitch}
+          onClick={() => navigate("/register")}
           className="w-full mt-6 text-center text-gray-400 text-sm hover:text-white"
         >
           Need an account? <span className="text-blue-400">Register</span>
@@ -58,4 +62,4 @@ const Login = ({ onSwitch }) => {
   );
 };
 
-export default Login; // <--- THIS LINE IS THE FIX
+export default Login;
