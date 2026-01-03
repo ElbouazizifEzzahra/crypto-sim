@@ -11,4 +11,6 @@ public interface OrdersRepository extends JpaRepository<Long, Orders> {
 
     // Find orders for a specific user
     List<Orders> findByUserId(Long userId);
+
+    void save(Orders order);
 }
