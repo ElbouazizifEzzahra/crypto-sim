@@ -1,0 +1,18 @@
+/* src/index.css */
+@import "tailwindcss";
+
+/* CryptoSim Theme Configuration */
+@theme {
+  --color-crypto-dark: #1a1a1a;
+  --color-crypto-card: #2b2b2b;
+  --color-trade-green: #26a69a;
+  --color-trade-red: #ef5350;
+}
+
+/* Force Dark Mode Default */
+body {
+  background-color: var(--color-crypto-dark);
+  color: white;
+  margin: 0;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
