@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TradesRepository extends JpaRepository<Long, TradesRepository> {
-    void save(Trades trades);
+public interface TradesRepository extends JpaRepository< Trades,Long> {
+
 }

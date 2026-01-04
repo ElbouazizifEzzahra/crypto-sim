@@ -124,6 +124,9 @@ public class MatchingEngine {
         sellerUsd.setBalance(sellerUsd.getBalance().add(totalCost));
 
         // Save all changes
-        walletRepository.saveAll(List.of(buyerUsd, buyerBtc, sellerUsd, sellerBtc));
+        walletRepository.save(buyerUsd);
+        walletRepository.save(buyerBtc);
+        walletRepository.save(sellerUsd);
+        walletRepository.save(sellerBtc);
     }
 }

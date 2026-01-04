@@ -1,26 +1,105 @@
 package com.cryptosim.crypto_sim.service.user;
 
 import com.cryptosim.crypto_sim.dto.user.UserDtoRequest;
+import com.cryptosim.crypto_sim.dto.user.UserDtoResponse;
+import com.cryptosim.crypto_sim.dto.user.UserMapper;
+import com.cryptosim.crypto_sim.model.User;
+import com.cryptosim.crypto_sim.model.Wallet;
 import com.cryptosim.crypto_sim.repository.UserRepository;
+import com.cryptosim.crypto_sim.repository.WalletRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.expression.ExpressionException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    private final PasswordEncoder encoder;
+    private final WalletRepository walletRepository;
+
     @Override
-    public void addUser( UserDtoRequest userDtoRequest) {
+    public UserDtoResponse addUser(@Valid UserDtoRequest userRequestDTO) {
+        User user =userMapper.toEntity(userRequestDTO);
+        if(!userRepository.existsByEmail(user.getEmail())){
+            user.setPassword(encoder.encode(user.getPassword()));
+            User savedUser = userRepository.save(user);
+            Wallet wallet = new Wallet();
+            wallet.setUser(savedUser );
+            wallet.setCurrency("USD");
+            wallet.setBalance(new BigDecimal("10000"));
+            wallet.setLocked(BigDecimal.ZERO);
+            walletRepository.save(wallet);
+            User saved=userRepository.save(user);
+            return  userMapper.toDTO(saved);}
+
+        else
+            return null;
 
     }
 
     @Override
-    public void deleteUser() {
+    public void deleteUser(Long id) {
+
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    public void editUser(@Valid UserDtoRequest userRequestDTO) {
+        if(userRequestDTO==null){
+            return ;
+        }
+        if (userRequestDTO.getId() == null) {
+            throw new IllegalArgumentException("User ID is required for updating.");
+        }
+        User existingUser  =userMapper.toEntity(userRequestDTO);
+        existingUser = userRepository.findUserById(userRequestDTO.getId());
+
+        if (!existingUser.getEmail().equals(userRequestDTO.getEmail()) && userRepository.existsByEmail(userRequestDTO.getEmail())) {
+            throw new RuntimeException("New email already exists and belongs to another user.");
+        }
+
+        if(userRepository.existsByEmail(existingUser .getEmail())){
+            userRepository.save(existingUser );
+        }
+
 
     }
 
     @Override
-    public void editUser() {
+    public List<UserDtoResponse> allUsers() {
+        List< User> users =userRepository.findAll();
 
+        return userMapper.toDTO(users) ;
+    }
+
+    @Override
+    public void changeUserPassword(Long userId,
+                                   String currentPassword,
+                                   String newPassword,
+                                   String currentUsername) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ExpressionException("Utilisateur non trouvé"));
+
+        if (!encoder.matches(currentPassword, user.getPassword())) {
+            throw new BadCredentialsException("Mot de passe actuel incorrect");
+        }
+
+        if (newPassword.length() < 8) {
+            throw new IllegalArgumentException("Le mot de passe doit contenir au moins 8 caractères");
+        }
+
+        user.setPassword(encoder.encode(newPassword));
+        userRepository.save(user);
     }
 }
