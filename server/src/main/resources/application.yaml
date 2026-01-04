@@ -2,7 +2,7 @@ spring:
   application:
     name: crypto-sim
   datasource:
-    url: jdbc:postgresql://postgres:5432/cryptosim
+    url: jdbc:postgresql://localhost:5432/cryptosim
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
@@ -21,3 +21,6 @@ spring:
 
 server:
   port: 8080
+
+JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+JWT_EXPIRATION: 86400000
