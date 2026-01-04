@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
@@ -41,11 +42,20 @@ public class UserController {
         List<UserDtoResponse> users = userService.allUsers();
         return ResponseEntity.ok(users);
     }
-    @PostMapping("/{id}/change-password")
+    @PostMapping("/change-password")
     public ResponseEntity<Void> changePassword(
-            @PathVariable Long id,
-            @RequestBody PasswordChangeDto passwordChangeDto) {
-        userService.changeUserPassword(id, passwordChangeDto.getCurrentPassword(), passwordChangeDto.getNewPassword(), null);
+            @RequestBody PasswordChangeDto passwordChangeDto,
+            Authentication authentication) {
+
+        String email = authentication.getName(); // email du user connecté
+
+        userService.changeUserPassword(
+                null,
+                passwordChangeDto.getCurrentPassword(),
+                passwordChangeDto.getNewPassword(),
+                email
+        );
+
         return ResponseEntity.ok().build();
     }
 }

@@ -9,13 +9,13 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class UserMapper {
-    private UserDtoRequest userDtoRequest;
-    private UserDtoResponse userDtoResponse;
-    private User user;
+
+
+
     public User toEntity(UserDtoRequest userDtoRequest){
+        User user = new User();
         user.setId(userDtoRequest.getId());
        user.setEmail(userDtoRequest.getEmail());
-       user.setPassword(userDtoRequest.getPassword());
        user.setFirstName(userDtoRequest.getFirstName());
        user.setLastName(userDtoRequest.getLastName());
        user.setPassword(userDtoRequest.getPassword());
@@ -23,6 +23,7 @@ public class UserMapper {
 
     }
     public UserDtoResponse toDTO( User user){
+        UserDtoResponse userDtoResponse=new UserDtoResponse();
         userDtoResponse.setId(user.getId());
         userDtoResponse.setFirstName(user.getFirstName());
         userDtoResponse.setLastName(user.getLastName());

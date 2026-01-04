@@ -39,8 +39,8 @@ public class UserServiceImpl implements UserService {
             wallet.setBalance(new BigDecimal("10000"));
             wallet.setLocked(BigDecimal.ZERO);
             walletRepository.save(wallet);
-            User saved=userRepository.save(user);
-            return  userMapper.toDTO(saved);}
+
+            return  userMapper.toDTO(savedUser);}
 
         else
             return null;
@@ -62,16 +62,20 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("User ID is required for updating.");
         }
         User existingUser  =userMapper.toEntity(userRequestDTO);
-        existingUser = userRepository.findUserById(userRequestDTO.getId());
-
-        if (!existingUser.getEmail().equals(userRequestDTO.getEmail()) && userRepository.existsByEmail(userRequestDTO.getEmail())) {
-            throw new RuntimeException("New email already exists and belongs to another user.");
+        if (existingUser == null) {
+            throw new RuntimeException("User not found");
         }
 
-        if(userRepository.existsByEmail(existingUser .getEmail())){
-            userRepository.save(existingUser );
+        if (!existingUser.getEmail().equals(userRequestDTO.getEmail())
+                && userRepository.existsByEmail(userRequestDTO.getEmail())) {
+            throw new RuntimeException("Email already exists");
         }
 
+        existingUser.setFirstName(userRequestDTO.getFirstName());
+        existingUser.setLastName(userRequestDTO.getLastName());
+        existingUser.setEmail(userRequestDTO.getEmail());
+
+        userRepository.save(existingUser);
 
     }
 
