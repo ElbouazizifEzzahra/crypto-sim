@@ -12,7 +12,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # ta7mil al dependencieز dakhil lcontainer
-RUN npm install
+RUN npm ci
 
 # ancopiw ba9i lmalafat dakhil lcontainer
 COPY . .
