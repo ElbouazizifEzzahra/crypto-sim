@@ -9,13 +9,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface WalletRepository extends JpaRepository<Long, Wallet> {
+public interface WalletRepository extends JpaRepository<Wallet,Long> {
     Optional<Wallet> findByUserIdAndCurrency(Long userId, String currency);
 
     // Find all wallets for a user
     List<Wallet> findByUserId(Long userId);
 
-    void save(Wallet wallet);
 
-    void saveAll(List list);
 }

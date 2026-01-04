@@ -2,13 +2,18 @@ package com.cryptosim.crypto_sim.dto.user;
 
 import com.cryptosim.crypto_sim.model.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.stream.Collectors;
+@Component
 @RequiredArgsConstructor
 public class UserMapper {
     private UserDtoRequest userDtoRequest;
     private UserDtoResponse userDtoResponse;
     private User user;
     public User toEntity(UserDtoRequest userDtoRequest){
+        user.setId(userDtoRequest.getId());
        user.setEmail(userDtoRequest.getEmail());
        user.setPassword(userDtoRequest.getPassword());
        user.setFirstName(userDtoRequest.getFirstName());
@@ -17,7 +22,7 @@ public class UserMapper {
      return user;
 
     }
-    public UserDtoResponse toDto( User user){
+    public UserDtoResponse toDTO( User user){
         userDtoResponse.setId(user.getId());
         userDtoResponse.setFirstName(user.getFirstName());
         userDtoResponse.setLastName(user.getLastName());
@@ -26,5 +31,13 @@ public class UserMapper {
         return userDtoResponse;
     }
 
+    public List <UserDtoResponse > toDTO(List<User> users) {
+        if (users == null || users.isEmpty()) {
+            return List.of();
+        }
 
+        return users.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
 }

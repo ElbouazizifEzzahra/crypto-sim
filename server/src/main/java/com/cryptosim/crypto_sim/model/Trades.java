@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "trades")
 public class Trades {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +21,7 @@ public class Trades {
     //How much was traded?
     private BigDecimal amount;
     private BigDecimal price;
+    @Column(name = "trade_time")
     private Timestamp currentTimestamp;
     @ManyToOne
     @JoinColumn

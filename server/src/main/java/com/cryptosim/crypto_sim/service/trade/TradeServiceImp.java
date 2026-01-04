@@ -19,7 +19,7 @@ import java.lang.Long;
 public class TradeServiceImp implements  TradeService{
 
     @Autowired
-    private PriceService priceService; // Le Hub de prix en RAM du Membre 1
+    private PriceService priceService;
 
     @Autowired
     private WalletRepository walletRepository;
