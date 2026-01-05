@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -21,11 +22,11 @@ public class Orders {
     private Side typeOrder;
     @Enumerated(value = EnumType.STRING)
     private Status statutOrder;
-    private Double quantity ;
+    private BigDecimal quantity ;
     private Timestamp created_at;
     @Enumerated(value = EnumType.STRING)
     private ExecutionType executionType;
-    private Double priceTarget;
+    private BigDecimal priceTarget;
     @OneToMany
     private List <Trades> trades;
     @ManyToOne
