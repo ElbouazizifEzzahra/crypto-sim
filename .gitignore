@@ -10,6 +10,7 @@ server/bin/
 server/*.jar
 server/*.war
 server/*.ear
+server/.env
 
 # =================================
 # FRONTEND (React - à venir)
