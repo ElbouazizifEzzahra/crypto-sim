@@ -5,11 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "trades")
 public class Trades {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,11 +19,17 @@ public class Trades {
     private Long buyerId;
     private Long sellerId;
     //How much was traded?
-    private Double amount;
-    private Double price;
+    private BigDecimal amount;
+    private BigDecimal price;
+    @Column(name = "trade_time")
     private Timestamp currentTimestamp;
     @ManyToOne
-    private Orders orders;
+    @JoinColumn
+    private Orders buyerOrder;
+
+    @ManyToOne
+    @JoinColumn
+    private Orders sellerOrder;
 
 
 }
