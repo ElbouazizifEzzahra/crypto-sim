@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
+/*
 @Service
 @RequiredArgsConstructor
 public class WalletServiceImp implements WalletService{
@@ -31,3 +32,4 @@ public class WalletServiceImp implements WalletService{
         walletRepository.save(wallet);
     }
 }
+*/

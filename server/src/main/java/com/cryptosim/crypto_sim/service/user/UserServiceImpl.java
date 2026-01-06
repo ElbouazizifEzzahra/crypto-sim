@@ -35,9 +35,10 @@ public class UserServiceImpl implements UserService {
             User savedUser = userRepository.save(user);
             Wallet wallet = new Wallet();
             wallet.setUser(savedUser );
-            wallet.setCurrency("USD");
-            wallet.setBalance(new BigDecimal("10000"));
-            wallet.setLocked(BigDecimal.ZERO);
+            wallet.setUsdBalance(new BigDecimal("10000.00"));
+            wallet.setBtcLocked(BigDecimal.ZERO);
+            wallet.setEthLocked(BigDecimal.ZERO);
+            wallet.setSolLocked(BigDecimal.ZERO);
             walletRepository.save(wallet);
 
             return  userMapper.toDTO(savedUser);}

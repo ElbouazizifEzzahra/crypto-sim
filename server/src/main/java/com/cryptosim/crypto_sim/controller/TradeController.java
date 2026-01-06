@@ -1,3 +1,4 @@
+/*
 package com.cryptosim.crypto_sim.controller;
 
 import com.cryptosim.crypto_sim.dto.trade.TradeDtoRequest;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/trade")
+@RequestMapping("/api/trader")
 public class TradeController {
 
     @Autowired
@@ -28,3 +29,4 @@ public class TradeController {
         return ResponseEntity.ok("Vente réussie");
     }
 }
+*/

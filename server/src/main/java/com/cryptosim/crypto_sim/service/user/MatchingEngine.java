@@ -1,7 +1,8 @@
+/*
 package com.cryptosim.crypto_sim.service.user;
 
 import com.cryptosim.crypto_sim.model.*;
-import com.cryptosim.crypto_sim.repository.OrdersRepository;
+import com.cryptosim.crypto_sim.repository.TransactionRepository;
 import com.cryptosim.crypto_sim.repository.TradesRepository;
 import com.cryptosim.crypto_sim.repository.WalletRepository;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,11 +17,11 @@ import java.util.List;
 @Service
 public class MatchingEngine {
 
-    private final OrdersRepository orderRepository;
+    private final TransactionRepository orderRepository;
     private final TradesRepository tradeRepository;
     private final WalletRepository walletRepository;
 
-    public MatchingEngine(OrdersRepository orderRepository, TradesRepository tradeRepository, WalletRepository walletRepository) {
+    public MatchingEngine(TransactionRepository orderRepository, TradesRepository tradeRepository, WalletRepository walletRepository) {
         this.orderRepository = orderRepository;
         this.tradeRepository = tradeRepository;
         this.walletRepository = walletRepository;
@@ -32,18 +33,18 @@ public class MatchingEngine {
     public void matchOrders() {
         // 1. Fetch all PENDING orders
         // Note: In a real app, you would sort these by Price + Time in the SQL query
-        List<Orders> buyOrders = orderRepository.findByStatutOrder(Status.PENDING);
-        List<Orders> sellOrders = orderRepository.findByStatutOrder(Status.PENDING);
+        List<Transaction> buyOrders = orderRepository.findByStatutOrder(Status.PENDING);
+        List<Transaction> sellOrders = orderRepository.findByStatutOrder(Status.PENDING);
 
         // Filter lists manually for simplicity (Real app does this in DB)
-        List<Orders> buys = buyOrders.stream().filter(o -> o.getTypeOrder() == Side.BUY).toList();
-        List<Orders> sells = sellOrders.stream().filter(o -> o.getTypeOrder() == Side.SELL).toList();
+        List<Transaction> buys = buyOrders.stream().filter(o -> o.getTypeOrder() == Side.BUY).toList();
+        List<Transaction> sells = sellOrders.stream().filter(o -> o.getTypeOrder() == Side.SELL).toList();
 
         // 2. The Matching Loop
-        for (Orders buy : buys) {
+        for (Transaction buy : buys) {
             if (buy.getStatutOrder() != Status.PENDING && buy.getStatutOrder() != Status.PARTIALLY_FILLED) continue;
 
-            for (Orders sell : sells) {
+            for (Transaction sell : sells) {
                 if (sell.getStatutOrder() != Status.PENDING && sell.getStatutOrder() != Status.PARTIALLY_FILLED) continue;
 
                 // CHECK: Is the Buy Price >= Sell Price?
@@ -61,7 +62,7 @@ public class MatchingEngine {
         }
     }
 
-    private void executeTrade(Orders buy, Orders sell) {
+    private void executeTrade(Transaction buy, Transaction sell) {
         // 1. Determine Quantity to Trade (The smallest of the two)
         BigDecimal tradeQty = buy.getQuantity().min(sell.getQuantity());
         BigDecimal tradePrice = sell.getPriceTarget(); // Usually executes at the Seller's price (Maker price)
@@ -89,7 +90,7 @@ public class MatchingEngine {
         settleWallets(buy.getUser(), sell.getUser(), tradeQty, tradePrice);
     }
 
-    private void updateOrderStatus(Orders order) {
+    private void updateOrderStatus(Transaction order) {
         if (order.getQuantity().compareTo(BigDecimal.ZERO) == 0) {
             order.setStatutOrder(Status.FILLED);
         } else {
@@ -130,3 +131,4 @@ public class MatchingEngine {
         walletRepository.save(sellerBtc);
     }
 }
+*/

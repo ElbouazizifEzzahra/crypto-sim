@@ -25,11 +25,11 @@ public class Trades {
     private Timestamp currentTimestamp;
     @ManyToOne
     @JoinColumn
-    private Orders buyerOrder;
+    private Transaction buyerOrder;
 
     @ManyToOne
     @JoinColumn
-    private Orders sellerOrder;
+    private Transaction sellerOrder;
 
 
 }

@@ -26,7 +26,7 @@ public class User{
     @OneToMany
     private List<Wallet> wallets;
     @OneToMany
-    private List<Orders> orders;
+    private List<Transaction> orders;
 
 
 }

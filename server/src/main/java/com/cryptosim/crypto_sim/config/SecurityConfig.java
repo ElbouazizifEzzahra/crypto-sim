@@ -32,7 +32,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/login/**", "/api/user/register").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/ws-crypto/**", "/topic/**", "/app/**").permitAll()
+                                .anyRequest().authenticated()
 
                 )
                 .authenticationProvider(authenticationProvider())

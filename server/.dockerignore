@@ -6,6 +6,7 @@ pom.xml.versionsBackup
 pom.xml.next
 release.properties
 mvnw
+.env
 .mvn/
 .mvn/wrapper/maven-wrapper.properties
 
