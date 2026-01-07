@@ -1,23 +1,27 @@
+/*
 package com.cryptosim.crypto_sim.service.trade;
 
-import com.cryptosim.crypto_sim.model.Orders;
+import com.cryptosim.crypto_sim.model.Transaction;
 import com.cryptosim.crypto_sim.model.Side;
 import com.cryptosim.crypto_sim.model.Wallet;
 import com.cryptosim.crypto_sim.repository.OrdersRepository;
 import com.cryptosim.crypto_sim.repository.WalletRepository;
 import com.cryptosim.crypto_sim.service.Price.PriceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.lang.Long;
+import java.util.List;
 
 @Service
 @Transactional
 public class TradeServiceImp implements  TradeService{
-
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     @Autowired
     private PriceService priceService;
 
@@ -52,13 +56,14 @@ public class TradeServiceImp implements  TradeService{
         walletRepository.save(usdWallet);
         walletRepository.save(cryptoWallet);
 
-        Orders order = new Orders();
+        Transaction order = new Transaction();
         order.setUser(usdWallet.getUser());
         order.setTypeOrder(Side.BUY);
         order.setQuantity(quantity);
         order.setPriceTarget(currentPrice);
         order.setCreated_at(new Timestamp(System.currentTimeMillis()));
         ordersRepository.save(order);
+        notifyUser(userId);
     }
 
     public void sell(Long userId, String symbol, BigDecimal quantity) {
@@ -82,11 +87,22 @@ public class TradeServiceImp implements  TradeService{
         walletRepository.save(usdWallet);
 
         // Créer l'enregistrement de vente
-        Orders order = new Orders();
+        Transaction order = new Transaction();
         order.setTypeOrder(Side.SELL);
         order.setQuantity(quantity);
         order.setPriceTarget(currentPrice);
         order.setCreated_at(new Timestamp(System.currentTimeMillis()));
         ordersRepository.save(order);
+        notifyUser(userId);
+    }
+    private void notifyUser(Long userId) {
+        List<Wallet> allWallets = walletRepository.findByUserId(userId);
+        // On envoie la liste des wallets mis à jour sur le canal privé de l'user
+        messagingTemplate.convertAndSendToUser(
+                userId.toString(),
+                "/queue/wallet",
+                allWallets
+        );
     }
 }
+*/
