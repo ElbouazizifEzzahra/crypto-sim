@@ -1,8 +1,6 @@
+version: '3.8'
 
 services:
-  # -----------------------------
-  # 1. GATEWAY
-  # -----------------------------
   gateway:
     image: nginx:alpine
     container_name: gateway-container
@@ -11,21 +9,18 @@ services:
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
-      - shared-network  # Connects to the backend's network
+      - cryptosim-global-network
+    depends_on:
+      - frontend
 
-  # -----------------------------
-  # 2. FRONTEND
-  # -----------------------------
   frontend:
-    build: ./client
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
     container_name: frontend-container
     networks:
-      - shared-network
+      - cryptosim-global-network
 
-# -----------------------------
-# THE GLUE
-# -----------------------------
 networks:
-  shared-network:
+  cryptosim-global-network:
     external: true
-    name: cryptosim-global-network # MUST match the name in Step 1

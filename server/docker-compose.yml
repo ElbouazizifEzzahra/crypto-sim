@@ -49,8 +49,8 @@ services:
 
 networks:
   cryptosim-network:
-    name: cryptosim-global-network  #<---- global private networking 
-    driver: bridge
+    name: cryptosim-global-network
+    external: true
 
 volumes:
   postgres_data:

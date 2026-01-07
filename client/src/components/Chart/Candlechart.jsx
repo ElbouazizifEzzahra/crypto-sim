@@ -1,16 +1,16 @@
 import React, { useEffect, useRef } from 'react';
-import { createChart, ColorType, CandlestickSeries } from 'lightweight-charts';
+import { createChart, ColorType, AreaSeries } from 'lightweight-charts'; // <--- CHANGED IMPORT
 
 export const CandleChart = ({ data, stream }) => {
     const chartContainerRef = useRef();
     const seriesRef = useRef();
+    const chartRef = useRef();
 
     useEffect(() => {
         const chart = createChart(chartContainerRef.current, {
             layout: {
                 background: { type: ColorType.Solid, color: '#1a1a1a' },
                 textColor: '#d1d5db',
-                attributionLogo: false,
             },
             grid: {
                 vertLines: { color: '#374151' },
@@ -24,21 +24,22 @@ export const CandleChart = ({ data, stream }) => {
             },
         });
 
-        const newSeries = chart.addSeries(CandlestickSeries, { 
-            upColor: '#26a69a',
-            downColor: '#ef5350',
-            borderVisible: false,
-            wickUpColor: '#26a69a',
-            wickDownColor: '#ef5350',
+        // <--- SWITCHED TO AREA SERIES (Best for single-price streams)
+        const newSeries = chart.addSeries(AreaSeries, {
+            lineColor: '#26a69a', 
+            topColor: 'rgba(38, 166, 154, 0.4)',
+            bottomColor: 'rgba(38, 166, 154, 0.0)',
+            lineWidth: 2,
         });
         
-        // Load History
+        // Load Initial History
         if (data && data.length > 0) {
             newSeries.setData(data);
-            chart.timeScale().fitContent(); // <--- CRITICAL FIX: Auto-zoom
+            chart.timeScale().fitContent();
         }
         
         seriesRef.current = newSeries;
+        chartRef.current = chart;
 
         const handleResize = () => {
             chart.applyOptions({ width: chartContainerRef.current.clientWidth });
@@ -49,7 +50,7 @@ export const CandleChart = ({ data, stream }) => {
             window.removeEventListener('resize', handleResize);
             chart.remove();
         };
-    }, [data]); 
+    }, []); // Only run once on mount
 
     // Handle Real-Time Updates
     useEffect(() => {
