@@ -1,30 +1,29 @@
-import { httpClient } from "../api/httpClient";
+import { httpClient } from '../api/httpClient';
 
-// This is the Mock Login your partner wrote (Keep this)
-export const loginRequest = async (credentials) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        token: "mock-jwt-token",
-        user: {
-          id: 1,
-          email: credentials.email,
-          name: "Demo User",
-        },
-      });
-    }, 800);
-  });
-};
+export const authService = {
+    // Keeps "Username" logic (Backend requirement)
+    login: async (username, password) => {
+        try {
+            const response = await httpClient.post('/auth/login', { username, password });
+            
+            // Backend only returns token, so we return it plus the username we just sent
+            return { 
+                token: response.token, 
+                user: { username: username } // We construct the user manually
+            };
+        } catch (error) {
+            // Standardize error message for the UI
+            throw new Error(error.response?.data?.message || "Invalid credentials or Server Error");
+        }
+    },
 
-// UPDATE THIS: Changed from a real fetch to a Mock Promise
-export const registerRequest = async (data) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      console.log("Mocking registration for:", data);
-      resolve({
-        message: "Registration successful",
-        user: { id: 2, email: data.email, name: data.name },
-      });
-    }, 800);
-  });
+    register: async (username, password, email) => {
+        // Keeps "/user/register" endpoint
+        return await httpClient.post('/user/register', { username, password, email });
+    },
+
+    logout: () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+    }
 };

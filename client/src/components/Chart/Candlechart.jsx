@@ -1,45 +1,44 @@
 import React, { useEffect, useRef } from 'react';
-import { createChart, ColorType, AreaSeries } from 'lightweight-charts'; // <--- CHANGED IMPORT
+import { createChart, ColorType, CandlestickSeries } from 'lightweight-charts';
 
 export const CandleChart = ({ data, stream }) => {
     const chartContainerRef = useRef();
     const seriesRef = useRef();
-    const chartRef = useRef();
+    const chartRef = useRef(); // Keep reference to chart to use methods later
 
     useEffect(() => {
         const chart = createChart(chartContainerRef.current, {
+            attributionLogo: false,
             layout: {
-                background: { type: ColorType.Solid, color: '#1a1a1a' },
-                textColor: '#d1d5db',
+                background: { type: ColorType.Solid, color: '#131722' },
+                textColor: '#d1d4dc',
             },
             grid: {
-                vertLines: { color: '#374151' },
-                horzLines: { color: '#374151' },
+                vertLines: { color: 'rgba(42, 46, 57, 0.5)' },
+                horzLines: { color: 'rgba(42, 46, 57, 0.5)' },
             },
             width: chartContainerRef.current.clientWidth,
             height: 450,
             timeScale: {
                 timeVisible: true,
-                secondsVisible: true,
+                secondsVisible: false,
+                borderColor: '#2B2B43',
+            },
+            rightPriceScale: {
+                borderColor: '#2B2B43',
             },
         });
 
-        // <--- SWITCHED TO AREA SERIES (Best for single-price streams)
-        const newSeries = chart.addSeries(AreaSeries, {
-            lineColor: '#26a69a', 
-            topColor: 'rgba(38, 166, 154, 0.4)',
-            bottomColor: 'rgba(38, 166, 154, 0.0)',
-            lineWidth: 2,
+        const newSeries = chart.addSeries(CandlestickSeries, { 
+            upColor: '#089981',
+            downColor: '#F23645',
+            borderVisible: false,
+            wickUpColor: '#089981',
+            wickDownColor: '#F23645',
         });
         
-        // Load Initial History
-        if (data && data.length > 0) {
-            newSeries.setData(data);
-            chart.timeScale().fitContent();
-        }
-        
         seriesRef.current = newSeries;
-        chartRef.current = chart;
+        chartRef.current = chart; // Save chart instance
 
         const handleResize = () => {
             chart.applyOptions({ width: chartContainerRef.current.clientWidth });
@@ -50,9 +49,17 @@ export const CandleChart = ({ data, stream }) => {
             window.removeEventListener('resize', handleResize);
             chart.remove();
         };
-    }, []); // Only run once on mount
+    }, []); 
 
-    // Handle Real-Time Updates
+    // ⚡️ EFFECT: Load History (Fake or Real)
+    useEffect(() => {
+        if (data && data.length > 0 && seriesRef.current) {
+            seriesRef.current.setData(data);
+            chartRef.current.timeScale().fitContent(); // Auto-zoom to fit history
+        }
+    }, [data]); // Run whenever 'data' changes
+
+    // ⚡️ EFFECT: Live Updates
     useEffect(() => {
         if (stream && seriesRef.current) {
             seriesRef.current.update(stream);
