@@ -1,77 +1,92 @@
-import React, { useState } from "react"; // Removed useContext import
-import { useNavigate } from "react-router-dom";
-// FIX: Import the HOOK from authContext, not the Provider
-import { useAuth } from "./authContext"; 
+import { useState, useContext } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { AuthContext } from "./authContext";
 
 const Login = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // FIX: Use the hook
-  const { login, authError } = useAuth(); 
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setError("");
+    setLoading(true);
 
     try {
-      await login(username, password);
-      // App.jsx will handle redirect
+      await login(email, password);
+      navigate("/");
     } catch (err) {
-      console.error("Login failed", err);
+      setError("Invalid email or password");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const inputStyle = "w-full p-3 bg-black border border-gray-700 rounded text-white outline-none focus:border-blue-500 transition-all";
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black p-4">
-      <div className="bg-gray-900 p-8 rounded-lg border border-gray-800 w-full max-w-md shadow-2xl">
-        <h2 className="text-2xl font-bold text-white mb-6 text-center text-blue-400">
-          Sign In
+    <div className="min-h-screen flex items-center justify-center bg-[#121212] font-sans text-gray-200">
+      <div className="bg-[#1e1e1e] p-10 rounded-xl shadow-2xl w-full max-w-sm border border-[#333]">
+        <h2 className="text-3xl font-bold mb-2 text-center text-white">
+          Welcome Back
         </h2>
+        <p className="text-sm text-gray-400 mb-8 text-center">
+          Sign in to access your portfolio
+        </p>
 
-        {authError && (
-          <div className="bg-rose-500/20 border border-rose-500 text-rose-500 p-3 rounded mb-4 text-sm text-center animate-pulse">
-            {authError}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-md text-sm text-center mb-4">
+            {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Username" 
-            required
-            className={inputStyle}
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            disabled={isLoading}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            className={inputStyle}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isLoading}
-          />
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-300">Email</label>
+            <input
+              type="email"
+              required
+              className="w-full p-3 rounded-md border border-[#333] bg-[#2d2d2d] text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-gray-300">
+              Password
+            </label>
+            <input
+              type="password"
+              required
+              className="w-full p-3 rounded-md border border-[#333] bg-[#2d2d2d] text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+            />
+          </div>
+
           <button
             type="submit"
-            disabled={isLoading}
-            className={`w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition flex justify-center items-center ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
+            className="w-full mt-2 p-3.5 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-500/20"
+            disabled={loading}
           >
-            {isLoading ? "Authenticating..." : "Sign In"}
+            {loading ? "Signing In..." : "Sign In"}
           </button>
         </form>
 
-        <button onClick={() => navigate("/register")} className="w-full mt-6 text-center text-gray-400 text-sm hover:text-white" disabled={isLoading}>
-          Need an account? <span className="text-blue-400">Register</span>
-        </button>
+        <p className="mt-6 text-center text-sm text-gray-500">
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors"
+          >
+            Register here
+          </Link>
+        </p>
       </div>
     </div>
   );

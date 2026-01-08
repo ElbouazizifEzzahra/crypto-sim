@@ -1,107 +1,155 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
-// 1. Correct Import: Use Context instead of direct Service
-import { AuthContext } from "./authContext"; 
+import { AuthContext } from "./authContext";
 
 const Register = () => {
-    // State for form inputs
-    const [formData, setFormData] = useState({
-        username: '',
-        email: '',
-        password: ''
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { register } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
     });
-    const [error, setError] = useState('');
-    
-    // 2. Extract register function from the AuthProvider
-    const { register } = useContext(AuthContext); 
-    const navigate = useNavigate();
+  };
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        
-        try {
-            // 3. Call the register function from context
-            await register(formData.username, formData.password, formData.email);
-            
-            // Redirect to login after successful registration
-            navigate("/login");
-        } catch (err) {
-            console.error(err);
-            setError("Registration failed. Username might be taken.");
-        }
-    };
+    try {
+      await register(formData);
+      navigate("/login");
+    } catch (err) {
+      const msg = err.message || "Registration failed. Try again.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
-            <div className="w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-lg shadow-lg">
-                <h2 className="text-2xl font-bold text-center text-green-400">Create Account</h2>
-                
-                {error && (
-                    <div className="p-3 text-sm text-red-200 bg-red-900 rounded border border-red-700">
-                        {error}
-                    </div>
-                )}
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#050505] font-sans text-gray-200 relative overflow-hidden">
+      {/* 🌟 Creative Background Glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-emerald-600/20 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-green-900/20 rounded-full blur-[120px] pointer-events-none" />
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-400">Username</label>
-                        <input
-                            type="text"
-                            name="username"
-                            value={formData.username}
-                            onChange={handleChange}
-                            required
-                            className="w-full px-4 py-2 mt-1 bg-gray-700 border border-gray-600 rounded focus:ring-green-500 focus:border-green-500 text-white"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-400">Email</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            required
-                            className="w-full px-4 py-2 mt-1 bg-gray-700 border border-gray-600 rounded focus:ring-green-500 focus:border-green-500 text-white"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-400">Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                            className="w-full px-4 py-2 mt-1 bg-gray-700 border border-gray-600 rounded focus:ring-green-500 focus:border-green-500 text-white"
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="w-full px-4 py-2 font-bold text-gray-900 bg-green-500 rounded hover:bg-green-400 transition-colors"
-                    >
-                        Register
-                    </button>
-                </form>
-
-                <p className="text-sm text-center text-gray-400">
-                    Already have an account?{" "}
-                    <Link to="/login" className="text-green-400 hover:underline">
-                        Login here
-                    </Link>
-                </p>
-            </div>
+      {/* 🔮 Glass Card */}
+      <div className="relative z-10 bg-[#121212]/80 backdrop-blur-xl p-8 md:p-10 rounded-2xl shadow-2xl w-full max-w-md border border-white/5 ring-1 ring-emerald-500/20">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500">
+            Create Account
+          </h2>
+          <p className="text-sm text-gray-400 mt-2">
+            Initialize your crypto portfolio
+          </p>
         </div>
-    );
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg text-sm text-center mb-6 animate-pulse">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-emerald-500/80 pl-1">
+                First Name
+              </label>
+              <input
+                name="firstName"
+                required
+                className="w-full p-3 rounded-lg border border-[#333] bg-[#1a1a1a] text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all duration-300 hover:border-[#444]"
+                value={formData.firstName}
+                onChange={handleChange}
+                placeholder="AHMED YASSINE"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-emerald-500/80 pl-1">
+                Last Name
+              </label>
+              <input
+                name="lastName"
+                required
+                className="w-full p-3 rounded-lg border border-[#333] bg-[#1a1a1a] text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all duration-300 hover:border-[#444]"
+                value={formData.lastName}
+                onChange={handleChange}
+                placeholder="HANCHOUCH"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-emerald-500/80 pl-1">
+              Email Address
+            </label>
+            <input
+              name="email"
+              type="email"
+              required
+              className="w-full p-3 rounded-lg border border-[#333] bg-[#1a1a1a] text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all duration-300 hover:border-[#444]"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="wallet@example.com"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-emerald-500/80 pl-1">
+              Password
+            </label>
+            <input
+              name="password"
+              type="password"
+              required
+              className="w-full p-3 rounded-lg border border-[#333] bg-[#1a1a1a] text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all duration-300 hover:border-[#444]"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full mt-4 p-4 rounded-lg bg-gradient-to-r from-emerald-600 to-green-600 text-white font-bold tracking-wide hover:from-emerald-500 hover:to-green-500 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-emerald-900/40 border border-emerald-500/20"
+            disabled={loading}
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Mining ID...
+              </span>
+            ) : (
+              "JOIN NOW"
+            )}
+          </button>
+        </form>
+
+        <p className="mt-8 text-center text-sm text-gray-500">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-emerald-400 hover:text-emerald-300 font-semibold transition-colors underline decoration-transparent hover:decoration-emerald-400 underline-offset-4"
+          >
+            Sign in here
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
 };
 
 export default Register;

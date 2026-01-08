@@ -1,46 +1,56 @@
-// This file handles all HTTP requests
-const BASE_URL = 'http://localhost/api'; // Going through Nginx Gateway
+// src/api/httpClient.js
+
+// Use Vite proxy in Dev, relative path in Prod
+const BASE_URL = "/api";
 
 const getHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-        'Content-Type': 'application/json',
-        // If we have a token, attach it!
-        ...(token && { 'Authorization': `Bearer ${token}` }) 
-    };
+  const token = localStorage.getItem("jwt_token");
+  return {
+    "Content-Type": "application/json",
+    ...(token && { Authorization: `Bearer ${token}` }),
+  };
 };
 
-// Generic Request Handler
-const request = async (endpoint, method = 'GET', body = null) => {
-    const config = {
-        method,
-        headers: getHeaders(),
-        ...(body && { body: JSON.stringify(body) })
-    };
+const request = async (endpoint, method = "GET", body = null) => {
+  const config = {
+    method,
+    headers: getHeaders(),
+    ...(body && { body: JSON.stringify(body) }),
+  };
 
-    try {
-        const response = await fetch(`${BASE_URL}${endpoint}`, config);
-        
-        // Handle 401 (Token Expired) -> Force Logout
-        if (response.status === 401) {
-            localStorage.removeItem('token');
-            window.location.href = '/login';
-            return null;
-        }
+  try {
+    const response = await fetch(`${BASE_URL}${endpoint}`, config);
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Something went wrong');
-        
-        return data;
-    } catch (error) {
-        console.error("API Error:", error);
-        throw error;
+    if (response.status === 401) {
+      localStorage.removeItem("jwt_token");
+      if (!window.location.pathname.includes("/login")) {
+        window.location.href = "/login";
+      }
+      return Promise.reject({ message: "Session expired" });
     }
+
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : {};
+
+    if (!response.ok) {
+      throw data || { message: `HTTP Error ${response.status}` };
+    }
+
+    return { data };
+  } catch (error) {
+    console.error("API Error:", error);
+    throw error;
+  }
 };
 
-export const httpClient = {
-    get: (url) => request(url, 'GET'),
-    post: (url, body) => request(url, 'POST', body),
-    put: (url, body) => request(url, 'PUT', body),
-    delete: (url) => request(url, 'DELETE'),
+// Define the client object
+const client = {
+  get: (url) => request(url, "GET"),
+  post: (url, body) => request(url, "POST", body),
+  put: (url, body) => request(url, "PUT", body),
+  delete: (url) => request(url, "DELETE"),
 };
+
+// EXPORT BOTH WAYS to satisfy all files:
+export const httpClient = client; // Named export (Fixes PortfolioContext error)
+export default client; // Default export (Fixes authService)

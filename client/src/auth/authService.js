@@ -1,29 +1,43 @@
-import { httpClient } from '../api/httpClient';
+import { httpClient } from "../api/httpClient";
 
-export const authService = {
-    // Keeps "Username" logic (Backend requirement)
-    login: async (username, password) => {
-        try {
-            const response = await httpClient.post('/auth/login', { username, password });
-            
-            // Backend only returns token, so we return it plus the username we just sent
-            return { 
-                token: response.token, 
-                user: { username: username } // We construct the user manually
-            };
-        } catch (error) {
-            // Standardize error message for the UI
-            throw new Error(error.response?.data?.message || "Invalid credentials or Server Error");
-        }
-    },
-
-    register: async (username, password, email) => {
-        // Keeps "/user/register" endpoint
-        return await httpClient.post('/user/register', { username, password, email });
-    },
-
-    logout: () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+const login = async (email, password) => {
+  try {
+    // Note: ensure this matches your backend endpoint
+    const response = await httpClient.post("/auth/login", { email, password });
+    if (response.data.token) {
+      localStorage.setItem("jwt_token", response.data.token);
     }
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
+
+const register = async (userData) => {
+  try {
+    const response = await httpClient.post("/user/register", userData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const logout = () => {
+  localStorage.removeItem("jwt_token");
+};
+
+const getToken = () => {
+  return localStorage.getItem("jwt_token");
+};
+
+// Define the service object
+const authService = {
+  login,
+  register,
+  logout,
+  getToken, // <--- This was likely missing or undefined before
+};
+
+// EXPORT BOTH WAYS (Fixes the crash)
+export const AuthService = authService;
+export default authService;
