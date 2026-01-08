@@ -2,7 +2,7 @@
 # mar7ala 1: tachron dyal front smito (Node.js)
 # (tkhaylo Node.JS b7al dak mostaj mol rmok li kaygol kob lia l7lobn)
 # ----------------------------
-FROM node:22-alpine AS builder
+FROM node:18-alpine AS builder
 
 # hna ghadi ngolo lih '/app' howa milaf l3amal
 WORKDIR /app
