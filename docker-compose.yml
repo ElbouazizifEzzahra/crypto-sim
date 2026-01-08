@@ -1,11 +1,11 @@
-version: '3.8'
+version: "3.8"
 
 services:
   gateway:
     image: nginx:alpine
     container_name: gateway-container
     ports:
-      - "80:80"
+      - "3000:80"
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
@@ -14,7 +14,7 @@ services:
       - frontend
 
   frontend:
-    build: 
+    build:
       context: ./client
       dockerfile: Dockerfile
     container_name: frontend-container
