@@ -1,6 +1,7 @@
-/*
+
 package com.cryptosim.crypto_sim.service.portfolio;
 
+import com.cryptosim.crypto_sim.dto.crypto.CryptoPosition;
 import com.cryptosim.crypto_sim.model.Side;
 import com.cryptosim.crypto_sim.model.Transaction;
 import com.cryptosim.crypto_sim.model.Wallet;
@@ -31,9 +32,10 @@ public class PortfolioService {
     @Autowired
     private PriceService priceService;
 
-    public PortfolioSummary getPortfolioSummary(String userId) {
+    public PortfolioSummary getPortfolioSummary(Long userId) {
         List<Transaction> transactions = transactionRepo.findByUserId(userId);
-        Wallet wallet = walletRepo.findByUserId(userId).orElse(new Wallet());
+        Wallet wallet = walletRepo.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
 
         // Calcul P&L (Profit & Loss)
         BigDecimal totalInvested = BigDecimal.ZERO;
@@ -45,10 +47,10 @@ public class PortfolioService {
             CryptoPosition position = positions.getOrDefault(symbol, new CryptoPosition(symbol));
 
             if (tx.getType() == Side.BUY) {
-                position.addBuy(tx.getQuantity(), tx.getPrice());
-                totalInvested = totalInvested.add(tx.getQuantity().multiply(tx.getPrice()));
+                position.addBuy(tx.getQuantity(), tx.getPriceAtTransaction()); // Correction du nom de champ
+                totalInvested = totalInvested.add(tx.getQuantity().multiply(tx.getPriceAtTransaction()));
             } else {
-                position.addSell(tx.getQuantity(), tx.getPrice());
+                position.addSell(tx.getQuantity(), tx.getPriceAtTransaction());
             }
 
             positions.put(symbol, position);
@@ -68,7 +70,7 @@ public class PortfolioService {
         BigDecimal totalValue = currentValue.add(wallet.getUsdBalance());
         BigDecimal totalPnL = totalValue.subtract(totalInvested);
         BigDecimal pnlPercent = totalInvested.compareTo(BigDecimal.ZERO) > 0
-                ? totalPnL.divide(totalInvested, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100))
+                ? totalPnL.divide(totalInvested, 4, BigDecimal.ROUND_HALF_UP).multiply(BigDecimal.valueOf(100))
                 : BigDecimal.ZERO;
 
         return PortfolioSummary.builder()
@@ -86,7 +88,7 @@ public class PortfolioService {
     @Data
     @Builder
     public static class PortfolioSummary {
-        private String userId;
+        private Long userId;
         private BigDecimal totalInvested;
         private BigDecimal currentValue;
         private BigDecimal profitLoss;
@@ -96,37 +98,5 @@ public class PortfolioService {
         private LocalDateTime lastUpdated;
     }
 
-    @Data
-    public static class CryptoPosition {
-        private String symbol;
-        private BigDecimal quantity;
-        private BigDecimal averageBuyPrice;
-        private BigDecimal currentPrice;
-        private BigDecimal currentValue;
-        private BigDecimal unrealizedPnL;
-        private BigDecimal unrealizedPnLPercent;
 
-        public CryptoPosition(String symbol) {
-            this.symbol = symbol;
-            this.quantity = BigDecimal.ZERO;
-            this.averageBuyPrice = BigDecimal.ZERO;
-        }
-
-        public void addBuy(BigDecimal quantity, BigDecimal price) {
-            BigDecimal totalCost = this.quantity.multiply(this.averageBuyPrice)
-                    .add(quantity.multiply(price));
-
-            this.quantity = this.quantity.add(quantity);
-            this.averageBuyPrice = this.quantity.compareTo(BigDecimal.ZERO) > 0
-                    ? totalCost.divide(this.quantity, 4, RoundingMode.HALF_UP)
-                    : BigDecimal.ZERO;
-        }
-
-        public void addSell(BigDecimal quantity, BigDecimal price) {
-            this.quantity = this.quantity.subtract(quantity);
-            if (this.quantity.compareTo(BigDecimal.ZERO) < 0) {
-                this.quantity = BigDecimal.ZERO;
-            }
-        }
-    }
-}*/
+}

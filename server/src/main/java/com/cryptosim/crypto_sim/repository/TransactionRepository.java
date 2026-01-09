@@ -14,6 +14,7 @@ public interface TransactionRepository extends JpaRepository<Transaction,Long> {
 
 
     // Trouver toutes les transactions d'un utilisateur
+
     List<Transaction> findByUserId(Long userId);
 
     // Trouver les transactions par utilisateur
