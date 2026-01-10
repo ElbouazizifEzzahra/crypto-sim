@@ -24,7 +24,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws-crypto/websocket")
                 .setAllowedOriginPatterns("*")  // Accepte toutes les origines
                 // .setAllowedOrigins("http://localhost:3000") // Pour une origine spécifique
-                .setHandshakeHandler(new DefaultHandshakeHandler());
+                .setHandshakeHandler(new DefaultHandshakeHandler())
+                .withSockJS();
     }
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
