@@ -34,14 +34,20 @@ public class AuthenticationImp implements Authentication{
 
             String token = jwtUtil.generateToken(user);
 
-            Map<String, String> response = new HashMap<>();
+            Map<String, Object> response = new HashMap<>();
             response.put("token", token);
-
+            response.put("user", Map.of(
+                    "id", user.getId(),
+                    "email", user.getEmail(),
+                    "firstName", user.getFirstName() != null ? user.getFirstName() : "",
+                    "lastName", user.getLastName() != null ? user.getLastName() : "",
+                    "username", user.getFirstName() != null && user.getLastName() != null 
+                            ? user.getFirstName() + " " + user.getLastName() 
+                            : user.getEmail().split("@")[0]
+            ));
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            System.out.println("ERREUR lors de l'authentification: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body("Email ou mot de passe incorrect");

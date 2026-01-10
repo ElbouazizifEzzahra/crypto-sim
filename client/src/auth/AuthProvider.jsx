@@ -1,21 +1,36 @@
 import { useState, useEffect } from "react";
 import { AuthContext } from "./authContext";
 import authService from "./authService";
+import { httpClient } from "../api/httpClient";
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(authService.getToken());
   const [isAuthenticated, setIsAuthenticated] = useState(!!token);
-  // Note: Since the login endpoint only returns a token,
-  // we derive 'user' existence from the token.
-  // In a real app, you might decode the JWT or fetch /me here.
   const [user, setUser] = useState(token ? { token } : null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchUserInfo = async (authToken) => {
+    try {
+      const response = await httpClient.get("/user/me");
+      const userData = response.data || response;
+      setUser({ token: authToken || token, ...userData });
+    } catch (error) {
+      console.error("Failed to fetch user info:", error);
+      // If fetch fails, still set user with token
+      setUser({ token: authToken || token });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const storedToken = authService.getToken();
     if (storedToken) {
       setToken(storedToken);
       setIsAuthenticated(true);
-      setUser({ token: storedToken });
+      fetchUserInfo(storedToken);
+    } else {
+      setLoading(false);
     }
   }, []);
 
@@ -24,7 +39,15 @@ export const AuthProvider = ({ children }) => {
       const data = await authService.login(email, password);
       setToken(data.token);
       setIsAuthenticated(true);
-      setUser({ token: data.token });
+      // If user data is in response, use it, otherwise fetch
+      if (data.user) {
+        setUser({ 
+          token: data.token,
+          ...data.user
+        });
+      } else {
+        await fetchUserInfo(data.token);
+      }
       return data;
     } catch (error) {
       throw error;
@@ -46,9 +69,11 @@ export const AuthProvider = ({ children }) => {
     token,
     user,
     isAuthenticated,
+    loading,
     login,
     register,
     logout,
+    refreshUser: fetchUserInfo,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

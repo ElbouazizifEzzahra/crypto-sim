@@ -29,15 +29,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
         
-        if (request.getRequestURI().startsWith("/ws-crypto")) {
+        // Skip JWT filter for WebSocket endpoints (SockJS uses /info, /websocket, etc.)
+        if (path.startsWith("/ws-crypto") || path.startsWith("/api/ws-crypto")) {
             filterChain.doFilter(request, response);
             return;
         }
         
-        if (path.startsWith("/ws-crypto/")) {
-        filterChain.doFilter(request, response);
-        return;
-    }
         final String authHeader = request.getHeader("Authorization");
         if(authHeader == null || !authHeader.startsWith("Bearer ")){
             filterChain.doFilter(request,response);

@@ -5,7 +5,6 @@ import com.cryptosim.crypto_sim.dto.user.UserDtoResponse;
 import com.cryptosim.crypto_sim.model.User;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface UserService {
      public UserDtoResponse addUser(UserDtoRequest userRequestDTO);
@@ -16,5 +15,6 @@ public interface UserService {
                                     String currentPassword,
                                     String newPassword,
                                     String currentUsername);
+     public com.cryptosim.crypto_sim.model.User getUserByEmail(String email);
 
 }
