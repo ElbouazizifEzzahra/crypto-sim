@@ -5,129 +5,117 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { useAuth } from "../auth/authContext";
+// 1. Correct Imports
+import { AuthContext } from "../auth/authContext";
+import { httpClient } from "../api/httpClient";
 import { CheckCircle, XCircle } from "lucide-react";
 
 const PortfolioContext = createContext(null);
 
 export const PortfolioProvider = ({ children }) => {
-  const { user } = useAuth();
-  const userKey = user ? `user_${user.id}_` : "guest_";
+  // 2. Use Standard Context (No useAuth)
+  const { user } = useContext(AuthContext);
 
-  const [balance, setBalance] = useState(10000.0);
+  // State
+  const [balance, setBalance] = useState(0);
   const [portfolioItems, setPortfolioItems] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [notification, setNotification] = useState(null);
 
-  // --- SOUND SYSTEM ---
+  // --- SOUND SYSTEM (UNCHANGED) ---
   const playSound = useCallback((type) => {
     const audio = new Audio(type === "success" ? "/success.mp3" : "/error.mp3");
-    audio.volume = 0.4; // Set to 40% volume
-    audio
-      .play()
-      .catch((err) => console.log("Audio play blocked by browser policy"));
+    audio.volume = 0.4;
+    audio.play().catch(() => {}); // Ignore browser autoplay blocks
   }, []);
 
-  // --- DATA LOADING ---
-  useEffect(() => {
-    if (user) {
-      const savedBalance = localStorage.getItem(`${userKey}usd_balance`);
-      const savedItems = localStorage.getItem(`${userKey}portfolio_items`);
-      const savedHistory = localStorage.getItem(
-        `${userKey}transaction_history`
-      );
-
-      setBalance(savedBalance ? parseFloat(savedBalance) : 10000.0);
-      setPortfolioItems(savedItems ? JSON.parse(savedItems) : []);
-      setTransactions(savedHistory ? JSON.parse(savedHistory) : []);
-    }
-  }, [user, userKey]);
-
-  // --- DATA PERSISTENCE ---
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem(`${userKey}usd_balance`, balance);
-      localStorage.setItem(
-        `${userKey}portfolio_items`,
-        JSON.stringify(portfolioItems)
-      );
-      localStorage.setItem(
-        `${userKey}transaction_history`,
-        JSON.stringify(transactions)
-      );
-    }
-  }, [balance, portfolioItems, transactions, userKey, user]);
-
+  // --- NOTIFICATION SYSTEM (UNCHANGED) ---
   const notify = (message, type = "success") => {
     setNotification({ message, type });
-    playSound(type); // Play sound whenever a notification is triggered
+    playSound(type);
     setTimeout(() => setNotification(null), 3500);
   };
 
-  // --- MOCK API TRADE LOGIC ---
+  // --- FETCH REAL DATA ---
+  const loadPortfolioData = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      // A. Fetch Wallet/Portfolio
+      const data = await httpClient.get("/portfolio"); 
+      // Assuming Backend returns: { balance: 10000, assets: [...] }
+      setBalance(data.balance || 0);
+      setPortfolioItems(data.assets || []);
+
+      // B. Fetch Transaction History (Optional - creates separate endpoint call)
+      // const history = await httpClient.get("/trade/history");
+      // setTransactions(history);
+      
+    } catch (error) {
+      console.error("Failed to load portfolio:", error);
+    }
+  }, [user]);
+
+  // Load on login
+  useEffect(() => {
+    loadPortfolioData();
+  }, [loadPortfolioData]);
+
+  // --- EXECUTE REAL TRADE ---
   const executeTrade = async (type, symbol, usdAmount, currentPrice) => {
     if (isSyncing) return;
     setIsSyncing(true);
 
-    // Simulate database processing time
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      // 1. Calculate Quantity (Backend expects amount of BTC, not USD)
+      // Note: Ensure your backend handles 'quantity' precision correctly
+      const quantity = usdAmount / currentPrice;
 
-    const quantity = usdAmount / currentPrice;
-
-    if (type === "BUY") {
-      if (usdAmount > balance) {
-        notify("Insufficient funds in your USD Wallet", "error");
-        setIsSyncing(false);
-        return;
-      }
-      setBalance((prev) => prev - usdAmount);
-      setPortfolioItems((prev) => {
-        const existing = prev.find((i) => i.symbol === symbol);
-        if (existing)
-          return prev.map((i) =>
-            i.symbol === symbol ? { ...i, quantity: i.quantity + quantity } : i
-          );
-        return [...prev, { symbol, quantity }];
+      // 2. Send Request to Spring Boot
+      // Endpoint: /api/trade/execute (Matches TradeController)
+      await httpClient.post("/trade/execute", {
+        symbol: symbol,
+        quantity: quantity,
+        type: type, // "BUY" or "SELL"
+        price: currentPrice // Send price for record-keeping or limit orders
       });
-      notify(`Purchase Confirmed: ${quantity.toFixed(6)} BTC`, "success");
-    } else if (type === "SELL") {
-      const item = portfolioItems.find((i) => i.symbol === symbol);
-      if (!item || item.quantity < quantity) {
-        notify(`Insufficient BTC balance to complete sale`, "error");
-        setIsSyncing(false);
-        return;
+
+      // 3. Success!
+      if (type === "BUY") {
+        notify(`Bought ${quantity.toFixed(6)} ${symbol}`, "success");
+      } else {
+        notify(`Sold ${quantity.toFixed(6)} ${symbol}`, "success");
       }
-      setBalance((prev) => prev + usdAmount);
-      setPortfolioItems((prev) =>
-        prev.map((i) =>
-          i.symbol === symbol ? { ...i, quantity: i.quantity - quantity } : i
-        )
-      );
-      notify(`Sale Confirmed: +$${usdAmount.toLocaleString()}`, "success");
+
+      // 4. Refresh Data (Update Balance & Portfolio instantly)
+      await loadPortfolioData();
+
+    } catch (error) {
+      // 5. Handle Error (e.g., "Insufficient Funds")
+      console.error("Trade Failed:", error);
+      // Extract error message from Backend response if possible
+      const msg = error.message || "Trade failed. Please try again.";
+      notify(msg, "error");
+    } finally {
+      setIsSyncing(false);
     }
-
-    setTransactions((prev) => [
-      {
-        symbol,
-        type,
-        quantity,
-        price: currentPrice,
-        timestamp: new Date().toISOString(),
-      },
-      ...prev,
-    ]);
-
-    setIsSyncing(false);
   };
 
   return (
     <PortfolioContext.Provider
-      value={{ balance, portfolioItems, transactions, executeTrade, isSyncing }}
+      value={{
+        balance,
+        portfolioItems,
+        transactions,
+        executeTrade,
+        isSyncing,
+        refreshPortfolio: loadPortfolioData
+      }}
     >
       {children}
 
-      {/* FLOATING NOTIFICATION UI */}
+      {/* --- NOTIFICATION UI (UNCHANGED) --- */}
       {notification && (
         <div className="fixed top-8 right-8 z-[9999] pointer-events-none">
           <div
@@ -157,4 +145,5 @@ export const PortfolioProvider = ({ children }) => {
   );
 };
 
+// Helper Hook
 export const usePortfolio = () => useContext(PortfolioContext);

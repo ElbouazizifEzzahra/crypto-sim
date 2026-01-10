@@ -1,30 +1,43 @@
 import { httpClient } from "../api/httpClient";
 
-// This is the Mock Login your partner wrote (Keep this)
-export const loginRequest = async (credentials) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        token: "mock-jwt-token",
-        user: {
-          id: 1,
-          email: credentials.email,
-          name: "Demo User",
-        },
-      });
-    }, 800);
-  });
+const login = async (email, password) => {
+  try {
+    // Note: ensure this matches your backend endpoint
+    const response = await httpClient.post("/auth/login", { email, password });
+    if (response.data.token) {
+      localStorage.setItem("jwt_token", response.data.token);
+    }
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
-// UPDATE THIS: Changed from a real fetch to a Mock Promise
-export const registerRequest = async (data) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      console.log("Mocking registration for:", data);
-      resolve({
-        message: "Registration successful",
-        user: { id: 2, email: data.email, name: data.name },
-      });
-    }, 800);
-  });
+const register = async (userData) => {
+  try {
+    const response = await httpClient.post("/user/register", userData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
+
+const logout = () => {
+  localStorage.removeItem("jwt_token");
+};
+
+const getToken = () => {
+  return localStorage.getItem("jwt_token");
+};
+
+// Define the service object
+const authService = {
+  login,
+  register,
+  logout,
+  getToken, // <--- This was likely missing or undefined before
+};
+
+// EXPORT BOTH WAYS (Fixes the crash)
+export const AuthService = authService;
+export default authService;
