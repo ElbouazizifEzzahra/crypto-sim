@@ -27,7 +27,14 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-
+        String path = request.getRequestURI();
+        
+        // Skip JWT filter for WebSocket endpoints (SockJS uses /info, /websocket, etc.)
+        if (path.startsWith("/ws-crypto") || path.startsWith("/api/ws-crypto")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        
         final String authHeader = request.getHeader("Authorization");
         if(authHeader == null || !authHeader.startsWith("Bearer ")){
             filterChain.doFilter(request,response);
@@ -51,5 +58,6 @@ public class JwtFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request,response);
     }
+
 
 }

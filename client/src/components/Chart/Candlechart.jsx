@@ -4,41 +4,41 @@ import { createChart, ColorType, CandlestickSeries } from 'lightweight-charts';
 export const CandleChart = ({ data, stream }) => {
     const chartContainerRef = useRef();
     const seriesRef = useRef();
+    const chartRef = useRef(); // Keep reference to chart to use methods later
 
     useEffect(() => {
         const chart = createChart(chartContainerRef.current, {
+            attributionLogo: false,
             layout: {
-                background: { type: ColorType.Solid, color: '#1a1a1a' },
-                textColor: '#d1d5db',
-                attributionLogo: false,
+                background: { type: ColorType.Solid, color: '#131722' },
+                textColor: '#d1d4dc',
             },
             grid: {
-                vertLines: { color: '#374151' },
-                horzLines: { color: '#374151' },
+                vertLines: { color: 'rgba(42, 46, 57, 0.5)' },
+                horzLines: { color: 'rgba(42, 46, 57, 0.5)' },
             },
             width: chartContainerRef.current.clientWidth,
             height: 450,
             timeScale: {
                 timeVisible: true,
-                secondsVisible: true,
+                secondsVisible: false,
+                borderColor: '#2B2B43',
+            },
+            rightPriceScale: {
+                borderColor: '#2B2B43',
             },
         });
 
         const newSeries = chart.addSeries(CandlestickSeries, { 
-            upColor: '#26a69a',
-            downColor: '#ef5350',
+            upColor: '#089981',
+            downColor: '#F23645',
             borderVisible: false,
-            wickUpColor: '#26a69a',
-            wickDownColor: '#ef5350',
+            wickUpColor: '#089981',
+            wickDownColor: '#F23645',
         });
         
-        // Load History
-        if (data && data.length > 0) {
-            newSeries.setData(data);
-            chart.timeScale().fitContent(); // <--- CRITICAL FIX: Auto-zoom
-        }
-        
         seriesRef.current = newSeries;
+        chartRef.current = chart; // Save chart instance
 
         const handleResize = () => {
             chart.applyOptions({ width: chartContainerRef.current.clientWidth });
@@ -49,9 +49,17 @@ export const CandleChart = ({ data, stream }) => {
             window.removeEventListener('resize', handleResize);
             chart.remove();
         };
-    }, [data]); 
+    }, []); 
 
-    // Handle Real-Time Updates
+    // ⚡️ EFFECT: Load History (Fake or Real)
+    useEffect(() => {
+        if (data && data.length > 0 && seriesRef.current) {
+            seriesRef.current.setData(data);
+            chartRef.current.timeScale().fitContent(); // Auto-zoom to fit history
+        }
+    }, [data]); // Run whenever 'data' changes
+
+    // ⚡️ EFFECT: Live Updates
     useEffect(() => {
         if (stream && seriesRef.current) {
             seriesRef.current.update(stream);

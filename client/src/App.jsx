@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { TrendingUp, Wallet, LogOut } from "lucide-react";
+import { TrendingUp, Wallet, LogOut, Settings } from "lucide-react";
 
 // Components
 import { CandleChart } from "./components/Chart/Candlechart.jsx";
@@ -8,17 +8,22 @@ import Login from "./auth/Login";
 import Register from "./auth/Register";
 import TradePanel from "./trade/TradePanel";
 import TransactionHistory from "./trade/TransactionHistory";
+import SettingsModal from "./components/SettingsModal";
 
 // Hooks & Context
 import { useMarketData } from "./hooks/useMarketData";
-import { useAuth } from "./auth/authContext";
+// 1. CHANGE: Import Context instead of useAuth
+import { AuthContext } from "./auth/authContext";
 import { usePortfolio } from "./portfolio/PortfolioContext";
 
 // --- COMPOSANT : LA PAGE TABLEAU DE BORD (DASHBOARD) ---
 const Dashboard = () => {
-  const { user, logout } = useAuth();
+  // 2. CHANGE: Use useContext to get user and logout
+  const { user, logout, refreshUser } = useContext(AuthContext);
   const { balance, portfolioItems } = usePortfolio();
   const { currentCandle, history } = useMarketData();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const currentPrice = currentCandle?.close || 0;
   const btcHolding =
@@ -27,12 +32,30 @@ const Dashboard = () => {
   const totalNetWorth = balance + btcValue;
   const profitLoss = totalNetWorth - 10000;
 
+  const handleLogout = () => {
+    logout();
+    setShowLogoutConfirm(false);
+  };
+
+  const getUsername = () => {
+    if (user?.firstName && user?.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    if (user?.firstName) {
+      return user.firstName;
+    }
+    if (user?.email) {
+      return user.email.split("@")[0];
+    }
+    return "User";
+  };
+
   return (
-    <div className="min-h-screen bg-crypto-dark text-white flex flex-col">
+    <div className="min-h-screen bg-[#0F1115] text-white flex flex-col font-sans">
       {/* HEADER FIXE */}
-      <header className="h-14 bg-black border-b border-gray-800 flex items-center justify-between px-6 sticky top-0 z-50">
+      <header className="h-16 bg-[#13151b] border-b border-gray-800 flex items-center justify-between px-6 sticky top-0 z-50">
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 text-green-400 font-mono text-sm">
+          <div className="flex items-center gap-2 text-emerald-400 font-mono text-sm">
             <TrendingUp size={16} />
             <span>
               BTC: $
@@ -42,12 +65,12 @@ const Dashboard = () => {
             </span>
           </div>
           <div className="hidden md:flex items-center gap-2 border-l border-gray-700 pl-6">
-            <span className="text-gray-500 text-[10px] uppercase font-bold">
-              Total Net Worth:
+            <span className="text-gray-500 text-[10px] uppercase font-bold tracking-wider">
+              Net Worth
             </span>
             <span
               className={`font-mono font-bold ${
-                profitLoss >= 0 ? "text-green-400" : "text-red-400"
+                profitLoss >= 0 ? "text-emerald-400" : "text-rose-400"
               }`}
             >
               $
@@ -59,12 +82,23 @@ const Dashboard = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <span className="text-gray-400 text-xs font-medium italic">
-            Compte de {user?.name}
-          </span>
+          <div className="text-right hidden sm:block">
+             <span className="block text-xs font-bold text-gray-200">
+                {getUsername()}
+             </span>
+             <span className="block text-[10px] text-gray-500 uppercase">Crypto Trader</span>
+          </div>
           <button
-            onClick={logout}
-            className="p-2 text-gray-500 hover:text-red-400 transition-colors"
+            onClick={() => setShowSettings(true)}
+            className="p-2 text-gray-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all"
+            title="Settings"
+          >
+            <Settings size={18} />
+          </button>
+          <button
+            onClick={() => setShowLogoutConfirm(true)}
+            className="p-2 text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
+            title="Logout"
           >
             <LogOut size={18} />
           </button>
@@ -72,38 +106,37 @@ const Dashboard = () => {
       </header>
 
       {/* CONTENU PRINCIPAL */}
-      <main className="flex-1 p-6 grid grid-cols-1 md:grid-cols-12 gap-6 max-w-[1600px] mx-auto w-full">
+      <main className="flex-1 p-6 grid grid-cols-1 md:grid-cols-12 gap-6 max-w-[1800px] mx-auto w-full">
         {/* COLONNE GAUCHE : GRAPHIQUE ET HISTORIQUE */}
-        <section className="col-span-12 md:col-span-8 flex flex-col gap-6">
-          <div className="bg-crypto-card rounded-lg p-4 border border-gray-700 h-[500px] relative shadow-xl">
-            <div className="absolute top-4 left-4 z-10 bg-black/60 p-3 rounded border border-gray-800 backdrop-blur-md">
-              <h2 className="text-xl font-bold text-gray-100 leading-none">
-                BTC/USD
-              </h2>
-              <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-widest font-bold">
-                Marché en direct
-              </p>
+        <section className="col-span-12 lg:col-span-9 flex flex-col gap-6">
+          <div className="bg-[#13151b] rounded-xl p-1 border border-gray-800 h-[550px] relative shadow-2xl overflow-hidden">
+            <div className="absolute top-5 left-5 z-10">
+               <h2 className="text-2xl font-bold text-white tracking-tight">BTC/USD</h2>
+               <div className="flex items-center gap-2 mt-1">
+                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                 <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Live Market</p>
+               </div>
             </div>
-            <CandleChart data={history} stream={currentCandle} />
+            {/* Chart Component */}
+            <div className="w-full h-full">
+               <CandleChart data={history} stream={currentCandle} />
+            </div>
           </div>
           <TransactionHistory />
         </section>
 
         {/* COLONNE DROITE : TRADING ET WALLET */}
-        <section className="col-span-12 md:col-span-4 flex flex-col gap-6">
+        <section className="col-span-12 lg:col-span-3 flex flex-col gap-6">
           <TradePanel currentPrice={currentPrice} />
 
-          <div className="bg-crypto-card rounded-lg p-6 border border-gray-700 shadow-lg">
-            <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-gray-200">
-              <Wallet size={20} className="text-blue-400" /> État du
-              Portefeuille
+          <div className="bg-[#13151b] rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 className="text-sm font-bold mb-6 flex items-center gap-2 text-gray-400 uppercase tracking-wider">
+              <Wallet size={16} className="text-emerald-500" /> Wallet Overview
             </h3>
             <div className="space-y-6">
               <div className="flex justify-between items-end border-b border-gray-800 pb-4">
-                <span className="text-xs text-gray-500 uppercase font-bold">
-                  Cash Disponible
-                </span>
-                <span className="text-xl font-mono text-green-400 font-bold">
+                <span className="text-xs text-gray-500 font-medium">USD Balance</span>
+                <span className="text-xl font-mono text-emerald-400 font-bold">
                   $
                   {balance.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
@@ -111,20 +144,18 @@ const Dashboard = () => {
                 </span>
               </div>
               <div className="flex justify-between items-end border-b border-gray-800 pb-4">
-                <span className="text-xs text-gray-500 uppercase font-bold">
-                  Quantité BTC
-                </span>
+                <span className="text-xs text-gray-500 font-medium">BTC Holdings</span>
                 <span className="text-xl font-mono text-blue-400 font-bold">
                   {btcHolding.toFixed(8)}
                 </span>
               </div>
-              <div className="bg-black/30 p-4 rounded-lg border border-gray-800">
-                <div className="text-[10px] text-gray-500 uppercase mb-1">
-                  Performance Globale
+              <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-800">
+                <div className="text-[10px] text-gray-500 uppercase mb-1 font-bold">
+                  P&L (All Time)
                 </div>
                 <div
                   className={`text-lg font-mono font-bold ${
-                    profitLoss >= 0 ? "text-green-500" : "text-red-500"
+                    profitLoss >= 0 ? "text-emerald-500" : "text-rose-500"
                   }`}
                 >
                   {profitLoss >= 0 ? "+" : ""}$
@@ -137,18 +168,56 @@ const Dashboard = () => {
           </div>
         </section>
       </main>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#13151b] rounded-2xl border border-gray-800 shadow-2xl w-full max-w-md p-6">
+            <h3 className="text-xl font-bold text-white mb-2">Confirm Logout</h3>
+            <p className="text-gray-400 mb-6">Are you sure you want to logout?</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 px-4 py-3 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-rose-600 to-red-600 text-white font-semibold hover:from-rose-500 hover:to-red-500 transition-all"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => {
+          setShowSettings(false);
+          refreshUser();
+        }}
+      />
     </div>
   );
 };
 
 // --- LOGIQUE DE ROUTAGE PRINCIPALE ---
 function App() {
-  const { isAuthenticated, loading } = useAuth();
+  // 3. CHANGE: Use useContext + derive isAuthenticated
+  const { user, loading } = useContext(AuthContext);
+  const isAuthenticated = !!user;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-crypto-dark flex items-center justify-center text-white font-mono uppercase tracking-widest">
-        Initialisation du terminal...
+      <div className="min-h-screen bg-[#0F1115] flex items-center justify-center">
+         <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+            <div className="text-emerald-500 font-mono text-sm uppercase tracking-widest animate-pulse">Initializing Terminal...</div>
+         </div>
       </div>
     );
   }
@@ -177,7 +246,7 @@ function App() {
         element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" />}
       />
 
-      {/* Page Privée (Chaque utilisateur a sa propre vue ici) */}
+      {/* Page Privée */}
       <Route
         path="/dashboard"
         element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
