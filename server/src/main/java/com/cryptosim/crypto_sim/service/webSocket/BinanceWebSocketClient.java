@@ -97,7 +97,7 @@ public class BinanceWebSocketClient {
                 System.out.println("💰 " + symbol + " = $" + price);
             }
         } catch (Exception e) {
-            System.out.println("❌ ERREUR PARSING: " + e.getMessage());
+            System.out.println(" ERREUR PARSING: " + e.getMessage());
         }
     }
     private void scheduleReconnection() {
