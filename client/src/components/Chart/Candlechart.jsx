@@ -4,7 +4,7 @@ import { createChart, ColorType, CandlestickSeries } from 'lightweight-charts';
 export const CandleChart = ({ data, stream }) => {
     const chartContainerRef = useRef();
     const seriesRef = useRef();
-    const chartRef = useRef(); // Keep reference to chart to use methods later
+    const chartRef = useRef();
 
     useEffect(() => {
         const chart = createChart(chartContainerRef.current, {
@@ -38,7 +38,7 @@ export const CandleChart = ({ data, stream }) => {
         });
         
         seriesRef.current = newSeries;
-        chartRef.current = chart; // Save chart instance
+        chartRef.current = chart;
 
         const handleResize = () => {
             chart.applyOptions({ width: chartContainerRef.current.clientWidth });
@@ -51,15 +51,13 @@ export const CandleChart = ({ data, stream }) => {
         };
     }, []); 
 
-    // ⚡️ EFFECT: Load History (Fake or Real)
     useEffect(() => {
         if (data && data.length > 0 && seriesRef.current) {
             seriesRef.current.setData(data);
-            chartRef.current.timeScale().fitContent(); // Auto-zoom to fit history
+            chartRef.current.timeScale().fitContent();
         }
-    }, [data]); // Run whenever 'data' changes
+    }, [data]);
 
-    // ⚡️ EFFECT: Live Updates
     useEffect(() => {
         if (stream && seriesRef.current) {
             seriesRef.current.update(stream);
