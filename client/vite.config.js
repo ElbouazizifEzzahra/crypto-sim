@@ -17,9 +17,13 @@ export default defineConfig({
         target: "http://localhost:8080",
         changeOrigin: true,
         secure: false,
-        // Optional: If your backend controller is just "@RequestMapping("/auth")"
-        // without "/api", uncomment the line below to strip "/api":
-        // rewrite: (path) => path.replace(/^\/api/, '')
+      },
+      // WebSocket proxy for development
+      "/ws-crypto": {
+        target: "http://localhost:8080",
+        ws: true,
+        changeOrigin: true,
+        secure: false,
       },
     },
   },

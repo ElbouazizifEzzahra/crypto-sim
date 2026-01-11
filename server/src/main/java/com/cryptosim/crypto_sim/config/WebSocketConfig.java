@@ -21,9 +21,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // Point d'entrée pour la connexion React (avec support SockJS)
-        registry.addEndpoint("/ws-crypto/websocket")
+        // Frontend connects to /ws-crypto, SockJS will handle /info and other sub-paths
+        registry.addEndpoint("/ws-crypto")
                 .setAllowedOriginPatterns("*")  // Accepte toutes les origines
-                // .setAllowedOrigins("http://localhost:3000") // Pour une origine spécifique
                 .setHandshakeHandler(new DefaultHandshakeHandler())
                 .withSockJS();
     }

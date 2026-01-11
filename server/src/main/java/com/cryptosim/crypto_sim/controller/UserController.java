@@ -58,4 +58,42 @@ public class UserController {
 
         return ResponseEntity.ok().build();
     }
+    
+    @GetMapping("/me")
+    public ResponseEntity<UserDtoResponse> getCurrentUser(Authentication authentication) {
+        String email = authentication.getName();
+        com.cryptosim.crypto_sim.model.User user = userService.getUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        UserDtoResponse response = new UserDtoResponse();
+        response.setId(user.getId());
+        response.setEmail(user.getEmail());
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        return ResponseEntity.ok(response);
+    }
+    
+    @PutMapping("/me")
+    public ResponseEntity<UserDtoResponse> updateCurrentUser(
+            @Valid @RequestBody UserDtoRequest userRequestDTO,
+            Authentication authentication) {
+        String email = authentication.getName();
+        com.cryptosim.crypto_sim.model.User user = userService.getUserByEmail(email);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        userRequestDTO.setId(user.getId());
+        userRequestDTO.setPassword(null);
+        userService.editUser(userRequestDTO);
+        
+        com.cryptosim.crypto_sim.model.User updatedUser = userService.getUserByEmail(email);
+        UserDtoResponse response = new UserDtoResponse();
+        response.setId(updatedUser.getId());
+        response.setEmail(updatedUser.getEmail());
+        response.setFirstName(updatedUser.getFirstName());
+        response.setLastName(updatedUser.getLastName());
+        return ResponseEntity.ok(response);
+    }
+    
 }

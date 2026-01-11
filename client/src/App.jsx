@@ -1,6 +1,6 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { TrendingUp, Wallet, LogOut } from "lucide-react";
+import { TrendingUp, Wallet, LogOut, Settings } from "lucide-react";
 
 // Components
 import { CandleChart } from "./components/Chart/Candlechart.jsx";
@@ -8,6 +8,7 @@ import Login from "./auth/Login";
 import Register from "./auth/Register";
 import TradePanel from "./trade/TradePanel";
 import TransactionHistory from "./trade/TransactionHistory";
+import SettingsModal from "./components/SettingsModal";
 
 // Hooks & Context
 import { useMarketData } from "./hooks/useMarketData";
@@ -18,9 +19,11 @@ import { usePortfolio } from "./portfolio/PortfolioContext";
 // --- COMPOSANT : LA PAGE TABLEAU DE BORD (DASHBOARD) ---
 const Dashboard = () => {
   // 2. CHANGE: Use useContext to get user and logout
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, refreshUser } = useContext(AuthContext);
   const { balance, portfolioItems } = usePortfolio();
   const { currentCandle, history } = useMarketData();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const currentPrice = currentCandle?.close || 0;
   const btcHolding =
@@ -28,6 +31,24 @@ const Dashboard = () => {
   const btcValue = btcHolding * currentPrice;
   const totalNetWorth = balance + btcValue;
   const profitLoss = totalNetWorth - 10000;
+
+  const handleLogout = () => {
+    logout();
+    setShowLogoutConfirm(false);
+  };
+
+  const getUsername = () => {
+    if (user?.firstName && user?.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    }
+    if (user?.firstName) {
+      return user.firstName;
+    }
+    if (user?.email) {
+      return user.email.split("@")[0];
+    }
+    return "User";
+  };
 
   return (
     <div className="min-h-screen bg-[#0F1115] text-white flex flex-col font-sans">
@@ -63,13 +84,21 @@ const Dashboard = () => {
         <div className="flex items-center gap-4">
           <div className="text-right hidden sm:block">
              <span className="block text-xs font-bold text-gray-200">
-                {user?.username}
+                {getUsername()}
              </span>
-             <span className="block text-[10px] text-gray-500 uppercase">Pro Account</span>
+             <span className="block text-[10px] text-gray-500 uppercase">Crypto Trader</span>
           </div>
           <button
-            onClick={logout}
+            onClick={() => setShowSettings(true)}
+            className="p-2 text-gray-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all"
+            title="Settings"
+          >
+            <Settings size={18} />
+          </button>
+          <button
+            onClick={() => setShowLogoutConfirm(true)}
             className="p-2 text-gray-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all"
+            title="Logout"
           >
             <LogOut size={18} />
           </button>
@@ -139,6 +168,39 @@ const Dashboard = () => {
           </div>
         </section>
       </main>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#13151b] rounded-2xl border border-gray-800 shadow-2xl w-full max-w-md p-6">
+            <h3 className="text-xl font-bold text-white mb-2">Confirm Logout</h3>
+            <p className="text-gray-400 mb-6">Are you sure you want to logout?</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 px-4 py-3 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 px-4 py-3 rounded-lg bg-gradient-to-r from-rose-600 to-red-600 text-white font-semibold hover:from-rose-500 hover:to-red-500 transition-all"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => {
+          setShowSettings(false);
+          refreshUser();
+        }}
+      />
     </div>
   );
 };

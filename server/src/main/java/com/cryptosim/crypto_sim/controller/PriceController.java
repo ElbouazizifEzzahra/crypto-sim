@@ -7,7 +7,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/prices")
-//@CrossOrigin(origins = "http://localhost:5173") // Autorise ton React
 public class PriceController {
 
     private final PriceService priceService;
@@ -22,11 +21,8 @@ public class PriceController {
         return priceService.getCurrentPrice(symbol);
     }
 
-    // Récupérer TOUS les prix d'un coup (Utile pour le dashboard)
     @GetMapping("/all")
     public Map<String, BigDecimal> getAllPrices() {
-        // Tu dois ajouter une méthode getAllPrices() dans ton PriceService
-        // qui retourne simplement la ConcurrentHashMap
         return priceService.getAllPrices();
     }
 }

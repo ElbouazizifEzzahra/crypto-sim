@@ -43,14 +43,21 @@ export const PortfolioProvider = ({ children }) => {
 
     try {
       // A. Fetch Wallet/Portfolio
-      const data = await httpClient.get("/portfolio"); 
-      // Assuming Backend returns: { balance: 10000, assets: [...] }
+      const response = await httpClient.get("/portfolio"); 
+      const data = response.data || response;
+      // Backend returns: { balance: 10000, assets: [...] }
       setBalance(data.balance || 0);
       setPortfolioItems(data.assets || []);
 
-      // B. Fetch Transaction History (Optional - creates separate endpoint call)
-      // const history = await httpClient.get("/trade/history");
-      // setTransactions(history);
+      // B. Fetch Transaction History
+      try {
+        const historyResponse = await httpClient.get("/trade/history");
+        const historyData = historyResponse.data || historyResponse;
+        setTransactions(Array.isArray(historyData) ? historyData : []);
+      } catch (historyError) {
+        console.warn("Failed to load transaction history:", historyError);
+        setTransactions([]);
+      }
       
     } catch (error) {
       console.error("Failed to load portfolio:", error);
@@ -65,38 +72,71 @@ export const PortfolioProvider = ({ children }) => {
   // --- EXECUTE REAL TRADE ---
   const executeTrade = async (type, symbol, usdAmount, currentPrice) => {
     if (isSyncing) return;
+    if (!currentPrice || currentPrice <= 0) {
+      notify("Invalid price. Please refresh the page.", "error");
+      return;
+    }
+    if (!usdAmount || usdAmount <= 0) {
+      notify("Please enter a valid amount", "error");
+      return;
+    }
+    
     setIsSyncing(true);
 
     try {
       // 1. Calculate Quantity (Backend expects amount of BTC, not USD)
-      // Note: Ensure your backend handles 'quantity' precision correctly
       const quantity = usdAmount / currentPrice;
+      
+      // Validate quantity
+      if (!isFinite(quantity) || quantity <= 0) {
+        notify("Invalid quantity calculated. Please check the amount.", "error");
+        setIsSyncing(false);
+        return;
+      }
 
       // 2. Send Request to Spring Boot
-      // Endpoint: /api/trade/execute (Matches TradeController)
-      await httpClient.post("/trade/execute", {
+      // Endpoint: /trade/execute (Matches TradeController)
+      const response = await httpClient.post("/trade/execute", {
         symbol: symbol,
         quantity: quantity,
         type: type, // "BUY" or "SELL"
-        price: currentPrice // Send price for record-keeping or limit orders
+        price: currentPrice // Send price for record-keeping
       });
 
       // 3. Success!
-      if (type === "BUY") {
-        notify(`Bought ${quantity.toFixed(6)} ${symbol}`, "success");
-      } else {
-        notify(`Sold ${quantity.toFixed(6)} ${symbol}`, "success");
-      }
+      if (response?.data?.status === "success") {
+        if (type === "BUY") {
+          notify(`Bought ${quantity.toFixed(6)} ${symbol}`, "success");
+        } else {
+          notify(`Sold ${quantity.toFixed(6)} ${symbol}`, "success");
+        }
 
-      // 4. Refresh Data (Update Balance & Portfolio instantly)
-      await loadPortfolioData();
+        // 4. Refresh Data (Update Balance & Portfolio instantly)
+        await loadPortfolioData();
+      } else {
+        const errorMsg = response?.data?.message || "Trade failed. Please try again.";
+        notify(errorMsg, "error");
+      }
 
     } catch (error) {
       // 5. Handle Error (e.g., "Insufficient Funds")
       console.error("Trade Failed:", error);
-      // Extract error message from Backend response if possible
-      const msg = error.message || "Trade failed. Please try again.";
-      notify(msg, "error");
+      
+      // Extract error message from Backend response
+      let errorMsg = "Trade failed. Please try again.";
+      
+      // Check different error structures
+      if (error.data?.message) {
+        errorMsg = error.data.message;
+      } else if (error.message) {
+        errorMsg = error.message;
+      } else if (typeof error === 'string') {
+        errorMsg = error;
+      } else if (error?.message) {
+        errorMsg = error.message;
+      }
+      
+      notify(errorMsg, "error");
     } finally {
       setIsSyncing(false);
     }

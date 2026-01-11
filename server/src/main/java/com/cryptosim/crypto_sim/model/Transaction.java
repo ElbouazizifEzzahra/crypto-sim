@@ -1,5 +1,6 @@
 package com.cryptosim.crypto_sim.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,6 +38,7 @@ public class Transaction {
     private BigDecimal quantity;
 
     @Column(name = "price_at_transaction", precision = 19, scale = 8)
+    @JsonProperty("price")
     private BigDecimal priceAtTransaction;
 
     @Column(name = "total_amount", precision = 19, scale = 8)

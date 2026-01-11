@@ -9,7 +9,6 @@ import com.cryptosim.crypto_sim.repository.UserRepository;
 import com.cryptosim.crypto_sim.repository.WalletRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.expression.ExpressionException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,37 +46,46 @@ public class UserServiceImpl implements UserService {
             return null;
 
     }
+    
+    @Override
+    public com.cryptosim.crypto_sim.model.User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
+    }
 
     @Override
     public void deleteUser(Long id) {
-
         userRepository.deleteById(id);
     }
 
     @Override
     public void editUser(@Valid UserDtoRequest userRequestDTO) {
-        if(userRequestDTO==null){
-            return ;
+        if (userRequestDTO == null) {
+            return;
         }
         if (userRequestDTO.getId() == null) {
             throw new IllegalArgumentException("User ID is required for updating.");
         }
-        User existingUser  =userMapper.toEntity(userRequestDTO);
-        if (existingUser == null) {
-            throw new RuntimeException("User not found");
-        }
+        
+        User existingUser = userRepository.findById(userRequestDTO.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!existingUser.getEmail().equals(userRequestDTO.getEmail())
+        if (userRequestDTO.getEmail() != null 
+                && !existingUser.getEmail().equals(userRequestDTO.getEmail())
                 && userRepository.existsByEmail(userRequestDTO.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
 
-        existingUser.setFirstName(userRequestDTO.getFirstName());
-        existingUser.setLastName(userRequestDTO.getLastName());
-        existingUser.setEmail(userRequestDTO.getEmail());
+        if (userRequestDTO.getFirstName() != null) {
+            existingUser.setFirstName(userRequestDTO.getFirstName());
+        }
+        if (userRequestDTO.getLastName() != null) {
+            existingUser.setLastName(userRequestDTO.getLastName());
+        }
+        if (userRequestDTO.getEmail() != null) {
+            existingUser.setEmail(userRequestDTO.getEmail());
+        }
 
         userRepository.save(existingUser);
-
     }
 
     @Override
@@ -94,7 +102,7 @@ public class UserServiceImpl implements UserService {
                                    String currentUsername) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ExpressionException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
         if (!encoder.matches(currentPassword, user.getPassword())) {
             throw new BadCredentialsException("Mot de passe actuel incorrect");
