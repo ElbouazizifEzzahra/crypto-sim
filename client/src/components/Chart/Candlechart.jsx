@@ -8,8 +8,8 @@ export const CandleChart = ({ data, stream }) => {
 
   useEffect(() => {
     const chart = createChart(chartContainerRef.current, {
-      attributionLogo: false,
       layout: {
+        attributionLogo: false,
         background: { type: ColorType.Solid, color: "#131722" },
         textColor: "#d1d4dc",
       },

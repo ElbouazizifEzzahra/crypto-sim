@@ -43,20 +43,29 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
     @PostMapping("/change-password")
-    public ResponseEntity<Void> changePassword(
+    public ResponseEntity<?> changePassword(
             @RequestBody PasswordChangeDto passwordChangeDto,
             Authentication authentication) {
 
-        String email = authentication.getName(); // email du user connecté
+        String email = (authentication != null) ? authentication.getName() : null; // email du user connecté
 
-        userService.changeUserPassword(
-                null,
-                passwordChangeDto.getCurrentPassword(),
-                passwordChangeDto.getNewPassword(),
-                email
-        );
-
-        return ResponseEntity.ok().build();
+        try {
+            userService.changeUserPassword(
+                    null,
+                    passwordChangeDto.getCurrentPassword(),
+                    passwordChangeDto.getNewPassword(),
+                    email
+            );
+            return ResponseEntity.ok().build();
+        } catch (org.springframework.security.authentication.BadCredentialsException ex) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN)
+                    .body(java.util.Map.of("message", ex.getMessage()));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("message", ex.getMessage()));
+        }
     }
     
     @GetMapping("/me")
