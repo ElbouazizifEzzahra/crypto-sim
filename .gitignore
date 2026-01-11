@@ -12,6 +12,7 @@ server/*.war
 server/*.ear
 server/.env
 
+remove_bg.py
 # =================================
 # FRONTEND (React - à venir)
 # =================================

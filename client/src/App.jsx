@@ -55,6 +55,11 @@ const Dashboard = () => {
       {/* HEADER FIXE */}
       <header className="h-16 bg-[#13151b] border-b border-gray-800 flex items-center justify-between px-6 sticky top-0 z-50">
         <div className="flex items-center gap-6">
+          <img
+            src="/assets/logo.png"
+            alt="Crypto Sim Logo"
+            className="h-10 w-auto object-contain"
+          />
           <div className="flex items-center gap-2 text-emerald-400 font-mono text-sm">
             <TrendingUp size={16} />
             <span>
@@ -83,10 +88,12 @@ const Dashboard = () => {
 
         <div className="flex items-center gap-4">
           <div className="text-right hidden sm:block">
-             <span className="block text-xs font-bold text-gray-200">
-                {getUsername()}
-             </span>
-             <span className="block text-[10px] text-gray-500 uppercase">Crypto Trader</span>
+            <span className="block text-xs font-bold text-gray-200">
+              {getUsername()}
+            </span>
+            <span className="block text-[10px] text-gray-500 uppercase">
+              Crypto Trader
+            </span>
           </div>
           <button
             onClick={() => setShowSettings(true)}
@@ -111,15 +118,19 @@ const Dashboard = () => {
         <section className="col-span-12 lg:col-span-9 flex flex-col gap-6">
           <div className="bg-[#13151b] rounded-xl p-1 border border-gray-800 h-[550px] relative shadow-2xl overflow-hidden">
             <div className="absolute top-5 left-5 z-10">
-               <h2 className="text-2xl font-bold text-white tracking-tight">BTC/USD</h2>
-               <div className="flex items-center gap-2 mt-1">
-                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                 <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Live Market</p>
-               </div>
+              <h2 className="text-2xl font-bold text-white tracking-tight">
+                BTC/USD
+              </h2>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+                  Live Market
+                </p>
+              </div>
             </div>
             {/* Chart Component */}
             <div className="w-full h-full">
-               <CandleChart data={history} stream={currentCandle} />
+              <CandleChart data={history} stream={currentCandle} />
             </div>
           </div>
           <TransactionHistory />
@@ -135,7 +146,9 @@ const Dashboard = () => {
             </h3>
             <div className="space-y-6">
               <div className="flex justify-between items-end border-b border-gray-800 pb-4">
-                <span className="text-xs text-gray-500 font-medium">USD Balance</span>
+                <span className="text-xs text-gray-500 font-medium">
+                  USD Balance
+                </span>
                 <span className="text-xl font-mono text-emerald-400 font-bold">
                   $
                   {balance.toLocaleString(undefined, {
@@ -144,7 +157,9 @@ const Dashboard = () => {
                 </span>
               </div>
               <div className="flex justify-between items-end border-b border-gray-800 pb-4">
-                <span className="text-xs text-gray-500 font-medium">BTC Holdings</span>
+                <span className="text-xs text-gray-500 font-medium">
+                  BTC Holdings
+                </span>
                 <span className="text-xl font-mono text-blue-400 font-bold">
                   {btcHolding.toFixed(8)}
                 </span>
@@ -173,8 +188,12 @@ const Dashboard = () => {
       {showLogoutConfirm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-[#13151b] rounded-2xl border border-gray-800 shadow-2xl w-full max-w-md p-6">
-            <h3 className="text-xl font-bold text-white mb-2">Confirm Logout</h3>
-            <p className="text-gray-400 mb-6">Are you sure you want to logout?</p>
+            <h3 className="text-xl font-bold text-white mb-2">
+              Confirm Logout
+            </h3>
+            <p className="text-gray-400 mb-6">
+              Are you sure you want to logout?
+            </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowLogoutConfirm(false)}
@@ -214,10 +233,12 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0F1115] flex items-center justify-center">
-         <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
-            <div className="text-emerald-500 font-mono text-sm uppercase tracking-widest animate-pulse">Initializing Terminal...</div>
-         </div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin"></div>
+          <div className="text-emerald-500 font-mono text-sm uppercase tracking-widest animate-pulse">
+            Initializing Terminal...
+          </div>
+        </div>
       </div>
     );
   }

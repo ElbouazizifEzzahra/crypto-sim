@@ -47,6 +47,15 @@ const Register = () => {
 
       {/* 🔮 Glass Card */}
       <div className="relative z-10 bg-[#121212]/80 backdrop-blur-xl p-8 md:p-10 rounded-2xl shadow-2xl w-full max-w-md border border-white/5 ring-1 ring-emerald-500/20">
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <img
+            src="/assets/logo.png"
+            alt="Crypto Sim Logo"
+            className="h-16 w-auto object-contain"
+          />
+        </div>
+
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-green-500">
             Create Account
