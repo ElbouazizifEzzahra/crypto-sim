@@ -12,7 +12,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// model/Transaction.java
 @Entity
 @Table(name = "transactions")
 @Data
@@ -48,4 +47,4 @@ public class Transaction {
     private LocalDateTime timestamp;
 }
 
-// model/TransactionType.java
+
