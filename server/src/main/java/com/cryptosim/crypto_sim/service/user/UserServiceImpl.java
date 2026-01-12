@@ -101,8 +101,17 @@ public class UserServiceImpl implements UserService {
                                    String newPassword,
                                    String currentUsername) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+        User user = null;
+        // If userId provided, prefer it; otherwise resolve by currentUsername (email)
+        if (userId != null) {
+            user = userRepository.findById(userId).orElse(null);
+        } else if (currentUsername != null) {
+            user = userRepository.findByEmail(currentUsername).orElse(null);
+        }
+
+        if (user == null) {
+            throw new RuntimeException("Utilisateur non trouvé");
+        }
 
         if (!encoder.matches(currentPassword, user.getPassword())) {
             throw new BadCredentialsException("Mot de passe actuel incorrect");
