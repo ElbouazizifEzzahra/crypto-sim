@@ -1,3 +1,4 @@
+
 package com.cryptosim.crypto_sim.service.trade;
 
 import com.cryptosim.crypto_sim.model.Transaction;

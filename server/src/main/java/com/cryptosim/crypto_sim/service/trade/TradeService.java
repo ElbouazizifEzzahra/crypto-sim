@@ -35,13 +35,13 @@ public class TradeService {
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
-    // AJOUTÉ : Méthode pour récupérer le wallet
+    // récupérer le wallet
     public Wallet getWallet(Long userId) {
         return walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Portefeuille non trouvé"));
     }
 
-    // AJOUTÉ : Méthode pour calculer la valeur d'une crypto
+    // calculer la valeur d'une crypto
     public BigDecimal calculateCryptoValue(String symbol, BigDecimal quantity) {
         return priceService.calculateCryptoValue(symbol, quantity);
     }
@@ -149,7 +149,7 @@ public class TradeService {
         };
     }
 
-    // AJOUTÉ : Méthode calculateTotalValue dans Wallet
+    // calculateTotalValue dans Wallet
     private BigDecimal calculateWalletTotalValue(Wallet wallet) {
         BigDecimal total = wallet.getUsdBalance();
         total = total.add(priceService.calculateCryptoValue("BTC", wallet.getBtcBalance()));
@@ -188,7 +188,6 @@ public class TradeService {
         return allWallets.stream()
                 .map(wallet -> {
                     BigDecimal netWorth = calculateWalletTotalValue(wallet);
-                    // CORRIGÉ : getUsername() au lieu de getLastName()
                     User user = wallet.getUser();
                     String username = (user.getLastName() != null) ? user.getLastName() :
                             (user.getLastName() != null) ? user.getLastName() : "User";

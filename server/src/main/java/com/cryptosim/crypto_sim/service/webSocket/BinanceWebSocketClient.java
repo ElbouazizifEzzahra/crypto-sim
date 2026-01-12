@@ -21,7 +21,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.stream.Collectors;
 
-// service/price/BinanceWebSocketClient.java
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -31,7 +31,7 @@ public class BinanceWebSocketClient {
     private final PriceService priceService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    // Symboles supportés selon le PDF
+
     private static final List<String> SYMBOLS = Arrays.asList("BTCUSDT", "ETHUSDT", "SOLUSDT");
 
     @PostConstruct
@@ -41,7 +41,7 @@ public class BinanceWebSocketClient {
 
     public void connectToBinance() {
         try {
-            // Créer le stream URL comme dans le PDF
+
             String streams = SYMBOLS.stream()
                     .map(s -> s.toLowerCase() + "@ticker")
                     .collect(Collectors.joining("/"));

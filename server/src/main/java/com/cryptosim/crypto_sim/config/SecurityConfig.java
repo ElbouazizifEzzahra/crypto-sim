@@ -38,9 +38,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             
             .authorizeHttpRequests(authorize -> authorize
-                // -----------------------------------------------------------
-                // 1. WEBSOCKET ENDPOINTS (Must be first - SockJS uses /info, /websocket, etc.)
-                // -----------------------------------------------------------
+
                 .requestMatchers(
                     "/ws-crypto/**",
                     "/ws-crypto/info/**",
@@ -53,21 +51,16 @@ public class SecurityConfig {
                     "/app/**"
                 ).permitAll()
                 
-                // -----------------------------------------------------------
-                // 2. PUBLIC ENDPOINTS (Allow both path styles)
-                // -----------------------------------------------------------
+
                 .requestMatchers(
                     "/auth/**",         "/api/auth/**", 
                     "/user/register",   "/api/user/register",
                     "/user/login",      "/api/user/login"
                 ).permitAll()
 
-                // -----------------------------------------------------------
-                // 3. CORS PREFLIGHT (Crucial for 403 errors on POST)
-                // -----------------------------------------------------------
+
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                
-                // 4. BLOCK EVERYTHING ELSE
+
                 .anyRequest().authenticated()
             )
             .httpBasic(basic -> basic.disable())
@@ -82,9 +75,7 @@ public class SecurityConfig {
 public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     
-    // -------------------------------------------------------------
-    // FIX: Allow your frontend port explicitly
-    // -------------------------------------------------------------
+
     configuration.setAllowedOrigins(List.of(
         "http://localhost:8082",  // Your Nginx/Gateway
         "http://localhost:5173",  // Vite (React) default

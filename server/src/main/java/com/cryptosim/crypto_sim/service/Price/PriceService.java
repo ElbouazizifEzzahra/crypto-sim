@@ -9,11 +9,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-// service/price/PriceService.java
+
 @Service
 public class PriceService {
 
-    // ConcurrentHashMap comme spécifié dans le PDF
+
     private final ConcurrentHashMap<String, BigDecimal> priceMap = new ConcurrentHashMap<>();
     private final SimpMessagingTemplate messagingTemplate;
 

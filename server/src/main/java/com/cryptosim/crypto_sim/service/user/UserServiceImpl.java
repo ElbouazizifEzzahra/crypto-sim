@@ -102,7 +102,6 @@ public class UserServiceImpl implements UserService {
                                    String currentUsername) {
 
         User user = null;
-        // If userId provided, prefer it; otherwise resolve by currentUsername (email)
         if (userId != null) {
             user = userRepository.findById(userId).orElse(null);
         } else if (currentUsername != null) {
